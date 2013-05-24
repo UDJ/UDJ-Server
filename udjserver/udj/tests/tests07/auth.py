@@ -90,6 +90,7 @@ class FbAuthTests(BasicUDJTestCase):
 
   def testFbAuth(self):
     import requests
+
     params = {
               "user_id" : FB_TEST_USER_ID,
               "access_token" : FB_TEST_ACCESS_TOKEN
@@ -124,4 +125,9 @@ class FbAuthTests(BasicUDJTestCase):
     self.assertEqual(response['WWW-Authenticate'], 'access-token')
 
   def testRegularAuthOnFbAccount(self):
-    
+    response= self.client.post(
+        '/udj/0_7/auth', json.dumps({'username': 'fbuser' , 'password' : '!'}),
+        content_type="text/json")
+
+    self.assertEqual(401, response.status_code)
+    self.assertEqual('password', response['WWW-Authenticate'])

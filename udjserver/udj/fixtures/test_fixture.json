@@ -2855,9 +2855,33 @@
     }
   },
 
+  {
+    "pk": 12, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "fbuser", 
+      "first_name": "face", 
+      "last_name": "book", 
+      "is_active": true, 
+      "is_superuser": false, 
+      "is_staff": false, 
+      "last_login": "2013-03-28T05:35:44.208", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "!", 
+      "email": "", 
+      "date_joined": "2013-03-28T05:35:44.208"
+    }
+  },
 
-
-
+  {
+    "pk" : 1,
+    "model" : "udj.fbuser",
+    "fields":{
+      "user" : 12,
+      "fb_user_id" : "inavlid_id"
+    }
+  },
 
   {
     "pk": 1,
