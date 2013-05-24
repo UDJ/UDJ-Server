@@ -123,3 +123,5 @@ class FbAuthTests(BasicUDJTestCase):
     self.assertEqual(response.status_code, 401, response.content)
     self.assertEqual(response['WWW-Authenticate'], 'access-token')
 
+  def testRegularAuthOnFbAccount(self):
+    
