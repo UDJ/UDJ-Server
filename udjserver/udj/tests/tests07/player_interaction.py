@@ -15,9 +15,10 @@ from udj.testhelpers.tests07.testclasses import (ZachTestCase,
                                                  LeeTestCase,
                                                  MattTestCase,
                                                  KurtisTestCase,
+                                                 AlejandroTestCase,
                                                  JeffTestCase,
                                                  EnsureActiveJeffTest)
-from udj.headers import FORBIDDEN_REASON_HEADER
+from udj.headers import FORBIDDEN_REASON_HEADER, MISSING_RESOURCE_HEADER
 from udj.testhelpers.tests07.decorators import EnsureParticipationUpdated
 
 import udj.resolvers.standard
@@ -333,22 +334,21 @@ class BadCurrentSongTestCases(EnsureActiveJeffTest):
     self.assertBadPlayerPermission(response)
 
 
-"""
-class BlankCurrentSongTestCase(DoesServerOpsTestCase):
+class BlankCurrentSongTestCase(AlejandroTestCase):
 
   def testSetCurrentSongWithBlank(self):
-    response = self.doPost('/udj/0_6/players/3/current_song', {'lib_id' : 1})
+    new_song = {'id' : '1', 'library_id' : '3'}
+    response = self.doJSONPost('/players/3/current_song', new_song)
     self.assertEqual(response.status_code, 200, response.content)
 
     self.assertEqual('PL',ActivePlaylistEntry.objects.get(pk=8).state)
     PlaylistEntryTimePlayed.objects.get(playlist_entry__id=8)
 
   def testRemoveWithNoCurrentSong(self):
-    response = self.doDelete('/udj/0_6/players/3/current_song')
+    response = self.doDelete('/players/3/current_song')
     self.assertEqual(response.status_code, 404, response.content)
     self.assertEqual('song', response[MISSING_RESOURCE_HEADER])
 
-"""
 
 """
 class LogoutTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):

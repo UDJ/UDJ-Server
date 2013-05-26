@@ -3,7 +3,7 @@ from datetime import datetime
 from itertools import islice
 
 from udj.views.views07.responses import HttpJSONResponse, HttpResponseMissingResource
-from udj.headers import FORBIDDEN_REASON_HEADER
+from udj.headers import FORBIDDEN_REASON_HEADER, MISSING_RESOURCE_HEADER
 from udj.views.views07.JSONCodecs import UDJEncoder
 from settings import DEFAULT_MAX_SONGS_RESULTS, DEFAULT_MAX_ARTIST_RESULTS
 from udj.models import (hashPlayerPassword,
@@ -234,7 +234,5 @@ def removeCurrentSong(request, player):
     currentSong.state=u'FN'
     currentSong.save()
   except ObjectDoesNotExist:
-    toReturn = HttpResponseNotFound()
-    toReturn[MISSING_RESOURCE_HEADER] = 'song'
-    return toReturn
+    return HttpResponseMissingResource('song')
   return HttpResponse()
