@@ -639,6 +639,7 @@ class PlayerPermission(models.Model):
     (u'SPA', u'set_password'),
     (u'KUS', u'kick_users'),
     (u'BUS', u'ban_users'),
+    (u'APC', u'active_playlist_mod_current_song'),
     (u'APR', u'active_playlist_remove_songs'),
     (u'APA', u'active_playlist_add_songs'),
     (u'APU', u'active_playlist_upvote'),

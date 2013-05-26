@@ -176,32 +176,27 @@ def getRandomSongsForPlayer(request, player_id, player):
   return HttpJSONResponse(json.dumps(toReturn, cls=UDJEncoder))
 
 
-"""
 @csrf_exempt
 @AcceptsMethods(['POST', 'DELETE'])
 @NeedsAuth
 @PlayerExists
 @PlayerIsActive
-@IsOwnerOrParticipatingAdmin
+@IsOwnerOrParticipates
+@HasPlayerPermissions(['APC'], 2)
 @UpdatePlayerActivity
 @transaction.commit_on_success()
 def modCurrentSong(request, player_id, player):
   if request.method == 'POST':
     return setCurrentSong(request, player)
-  elif request.method == 'DELETE':
-    return removeCurrentSong(request, player)
   else:
-    #Should never get here because of the AcceptsMethods decorator
-    #Put here because I'm pedantic sometimes :/
-    return HttpResponseNotAllowed(['POST', 'DELETE'])
+    return removeCurrentSong(request, player)
 
-@HasNZParams(['lib_id'])
-def setCurrentSong(request, player):
-  player.lockActivePlaylist()
+@HasJSONNZParams(['id', 'library_id'])
+def setCurrentSong(request, player, json_params):
   try:
     newCurrentSong = ActivePlaylistEntry.objects.get(
-      song__lib_id=request.POST['lib_id'],
-      song__library=player.DefaultLibrary,
+      song__lib_id=json_params['id'],
+      song__library__id=int(json_params['library_id']),
       state=u'QE')
   except ObjectDoesNotExist:
     toReturn = HttpResponseNotFound()
@@ -236,5 +231,3 @@ def removeCurrentSong(request, player):
     toReturn[MISSING_RESOURCE_HEADER] = 'song'
     return toReturn
   return HttpResponse()
-
-"""
