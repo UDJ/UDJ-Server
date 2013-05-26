@@ -18,8 +18,9 @@ from django.db import transaction
 from django.http import HttpResponse, HttpResponseNotFound
 from django.core.exceptions import ObjectDoesNotExist
 
-def getAlreadyOnPlaylist(libIds, library, player):
-  return filter(lambda x: ActivePlaylistEntry.isQueuedOrPlaying(x, library, player), libIds)
+def getAlreadyOnPlaylist(songs, library, player):
+  return filter(lambda x: ActivePlaylistEntry.isQueuedOrPlaying(x['id'], x['library_id'], player),
+                songs)
 
 def getNotOnPlaylist(songs, player):
   return filter(lambda x: not ActivePlaylistEntry.isQueued(x['id'], x['library_id'], player), songs)
@@ -64,6 +65,13 @@ def getActivePlaylist(player):
 @HasPlayerPermissions(['APR', 'APA'])
 @HasNZJSONParams(['to_add','to_remove'])
 def multiModActivePlaylist(request, player, json_params):
+
+
+
+  """
+  Code so ugly.....
+  """
+
   player.lockActivePlaylist()
   toAdd = json_params['to_add']
   toRemove = json_params['to_remove']
@@ -99,10 +107,11 @@ def multiModActivePlaylist(request, player, json_params):
       currentSong = None
     for libid in alreadyOnPlaylist:
       #make sure we don't vote on the currently playing song
-      if currentSong != None and not (currentSong.song.lib_id == libid and currentSong.song.library == player.DefaultLibrary):
+      if (currentSong != None and not 
+          (currentSong.song.lib_id == libid and currentSong.song.library == player.DefaultLibrary)):
         voteSong(player, user, libid, 1)
 
-    #alright, should be good to go. Let's actually add/remove songs
+    #alright, we should be good to go. Let's actually add/remove songs
     #Note that we didn't make any actual changes to the DB until we were sure all of our inputs
     #were good and we weren't going to return an error HttpResponse. This is what allows us to use
     #the commit on success
