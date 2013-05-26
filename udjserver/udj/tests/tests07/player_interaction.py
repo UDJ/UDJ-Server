@@ -16,8 +16,7 @@ from udj.testhelpers.tests07.testclasses import (ZachTestCase,
                                                  MattTestCase,
                                                  KurtisTestCase,
                                                  AlejandroTestCase,
-                                                 JeffTestCase,
-                                                 EnsureActiveJeffTest)
+                                                 JeffTestCase)
 from udj.headers import FORBIDDEN_REASON_HEADER, MISSING_RESOURCE_HEADER
 from udj.testhelpers.tests07.decorators import EnsureParticipationUpdated
 
@@ -321,7 +320,7 @@ class CurrentSongTestCases(KurtisTestCase):
     self.assertFalse(ActivePlaylistEntry.objects.filter(song__library__id=1, state='PL').exists())
 
 
-class BadCurrentSongTestCases(EnsureActiveJeffTest):
+class BadCurrentSongTestCases(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
   playerid = 1
 
   def testRemoveCurrentSongBadPemissions(self):
@@ -350,7 +349,7 @@ class BlankCurrentSongTestCase(AlejandroTestCase):
     self.assertEqual('song', response[MISSING_RESOURCE_HEADER])
 
 
-class LogoutTests(EnsureActiveJeffTest):
+class LogoutTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
   playerid = 1
   def testLogout(self):
     response = self.doDelete('/players/1/users/user')

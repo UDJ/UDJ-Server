@@ -58,7 +58,18 @@ urlpatterns += patterns('udj.views.views07.player_interaction',
   (r'^players/(?P<player_id>\d+)/available_music/random_songs$', 'getRandomSongsForPlayer'),
   (r'^players/(?P<player_id>\d+)/current_song$', 'modCurrentSong'),
 )
-  #(r'^players/(?P<player_id>\d+)/song_sets$', 'getSongSetsForPlayer'),
+
+urlpatterns += patterns('udj.views.views07.active_playlist',
+  (r'^players/(?P<player_id>\d+)/active_playlist$', 'activePlaylist'),
+)
+
+"""
+  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)$', 'modActivePlaylist'),
+  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)/upvote$', 
+    'voteSongUp'),
+  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)/downvote$', 
+    'voteSongDown'),
+"""
 
 """
 urlpatterns += patterns('udj.views.views07.favorites',
@@ -67,15 +78,6 @@ urlpatterns += patterns('udj.views.views07.favorites',
 )
 
 
-
-urlpatterns += patterns('udj.views.views07.active_playlist',
-  (r'^players/(?P<player_id>\d+)/active_playlist$', 'activePlaylist'),
-  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)$', 'modActivePlaylist'),
-  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)/upvote$', 
-    'voteSongUp'),
-  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)/downvote$', 
-    'voteSongDown'),
-)
 
 urlpatterns += patterns('udj.views.views07.library',
   (r'^players/(?P<player_id>\d+)/library/songs$', 'addSongs2Library'),
