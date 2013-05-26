@@ -1,27 +1,34 @@
 import json
-from udj.models import hashPlayerPassword, PlayerPassword, Participant
-from udj.headers import FORBIDDEN_REASON_HEADER
-from udj.views.views07.authdecorators import NeedsAuth, IsntOwner, HasPlayerPermissions, IsOwnerOrParticipates
-from udj.views.views07.decorators import PlayerExists, PlayerIsActive, AcceptsMethods, UpdatePlayerActivity, HasNZJSONParams, NeedsJSON, HasNZParams
+from datetime import datetime
+from itertools import islice
+
 from udj.views.views07.responses import HttpJSONResponse, HttpResponseMissingResource
+from udj.headers import FORBIDDEN_REASON_HEADER
 from udj.views.views07.JSONCodecs import UDJEncoder
 from settings import DEFAULT_MAX_SONGS_RESULTS, DEFAULT_MAX_ARTIST_RESULTS
-from itertools import islice
+from udj.models import (hashPlayerPassword,
+                        PlayerPassword,
+                        Participant,
+                        ActivePlaylistEntry,
+                        PlaylistEntryTimePlayed)
+from udj.views.views07.authdecorators import (NeedsAuth,
+                                              IsntOwner,
+                                              HasPlayerPermissions,
+                                              IsOwnerOrParticipates)
+from udj.views.views07.decorators import (PlayerExists,
+                                          PlayerIsActive,
+                                          AcceptsMethods,
+                                          UpdatePlayerActivity,
+                                          HasNZJSONParams,
+                                          NeedsJSON,
+                                          HasNZParams)
 
 
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
-from datetime import datetime
-"""
-import json
-
-
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, HttpResponseBadRequest
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-
-"""
 
 @csrf_exempt
 @AcceptsMethods(['PUT', 'DELETE'])
@@ -191,7 +198,7 @@ def modCurrentSong(request, player_id, player):
   else:
     return removeCurrentSong(request, player)
 
-@HasJSONNZParams(['id', 'library_id'])
+@HasNZJSONParams(['id', 'library_id'])
 def setCurrentSong(request, player, json_params):
   try:
     newCurrentSong = ActivePlaylistEntry.objects.get(

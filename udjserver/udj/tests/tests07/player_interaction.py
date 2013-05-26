@@ -1,8 +1,21 @@
 import json
 import udj
-from udj.models import Participant, SongSet, SongSetEntry, LibraryEntry, Player, PlayerPermissionGroup, PlayerPermission, Library
+from udj.models import (Participant,
+                        SongSet,
+                        SongSetEntry,
+                        LibraryEntry,
+                        Player,
+                        PlayerPermissionGroup,
+                        PlayerPermission,
+                        Library,
+                        ActivePlaylistEntry,
+                        PlaylistEntryTimePlayed)
 from datetime import datetime
-from udj.testhelpers.tests07.testclasses import ZachTestCase, LeeTestCase, MattTestCase
+from udj.testhelpers.tests07.testclasses import (ZachTestCase,
+                                                 LeeTestCase,
+                                                 MattTestCase,
+                                                 KurtisTestCase,
+                                                 JeffTestCase)
 """
 , MattTestCase, JeffTestCase, LeeTestCase, KurtisTestCase
 """
@@ -291,6 +304,49 @@ class GetRdioRandoms(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
       self.assertFalse(LibraryEntry.objects.get(library__id=int(song['library_id']),
                                                 lib_id=song['id'])
                                                 .is_banned(Player.objects.get(pk=8)))
+
+class CurrentSongTestCases(KurtisTestCase):
+
+  def testSetCurrentSong(self):
+    new_song = {'id' : '1', 'library_id' : '1'}
+    response = self.doJSONPost('/players/1/current_song', new_song)
+    self.assertEqual(response.status_code, 200, response.content)
+
+    self.assertEqual('FN',ActivePlaylistEntry.objects.get(pk=5).state)
+    self.assertEqual('PL',ActivePlaylistEntry.objects.get(pk=1).state)
+    PlaylistEntryTimePlayed.objects.get(playlist_entry__id=1)
+
+  def testRemoveCurrentSong(self):
+    response = self.doDelete('/players/1/current_song')
+    self.assertEqual(response.status_code, 200, response.content)
+    self.assertEqual('FN',ActivePlaylistEntry.objects.get(pk=5).state)
+    self.assertFalse(ActivePlaylistEntry.objects.filter(song__library__id=1, state='PL').exists())
+
+
+"""
+class BadCurrentSongTestCases(JeffTestCase):
+  
+  @EnsureParticipationUpdated(3, 1)
+  def testRemoveCurrentSongBadPemissions(self):
+    response = self.doPost('/udj/0_6/players/1/current_song', {'lib_id' : 1})
+"""
+
+"""
+class BlankCurrentSongTestCase(DoesServerOpsTestCase):
+
+  def testSetCurrentSongWithBlank(self):
+    response = self.doPost('/udj/0_6/players/3/current_song', {'lib_id' : 1})
+    self.assertEqual(response.status_code, 200, response.content)
+
+    self.assertEqual('PL',ActivePlaylistEntry.objects.get(pk=8).state)
+    PlaylistEntryTimePlayed.objects.get(playlist_entry__id=8)
+
+  def testRemoveWithNoCurrentSong(self):
+    response = self.doDelete('/udj/0_6/players/3/current_song')
+    self.assertEqual(response.status_code, 404, response.content)
+    self.assertEqual('song', response[MISSING_RESOURCE_HEADER])
+
+"""
 
 """
 class LogoutTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
