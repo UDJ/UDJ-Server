@@ -1,23 +1,28 @@
 import json
 
-from udj.models import Participant, Player, ActivePlaylistEntry, LibraryEntry, Vote
-from udj.views.views06.decorators import PlayerExists, PlayerIsActive, AcceptsMethods, UpdatePlayerActivity, HasNZParams
-from udj.views.views06.authdecorators import NeedsAuth, IsOwnerOrParticipates, IsOwnerOrParticipatingAdmin
-from udj.views.views06.JSONCodecs import UDJEncoder
-from udj.views.views06.helpers import HttpJSONResponse
-from udj.views.views06.auth import getUserForTicket
+from udj.views.views07.JSONCodecs import UDJEncoder
 from udj.headers import MISSING_RESOURCE_HEADER
+from udj.views.views07.responses import HttpJSONResponse
+from udj.models import Participant, Player, ActivePlaylistEntry, LibraryEntry, Vote
+from udj.views.views07.decorators import (PlayerExists,
+                                          PlayerIsActive,
+                                          AcceptsMethods,
+                                          UpdatePlayerActivity,
+                                          HasNZJSONParams)
+from udj.views.views07.authdecorators import (NeedsAuth,
+                                              HasPlayerPermissions,
+                                              IsOwnerOrParticipates)
 
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseNotFound
 from django.core.exceptions import ObjectDoesNotExist
 
 def getAlreadyOnPlaylist(libIds, library, player):
   return filter(lambda x: ActivePlaylistEntry.isQueuedOrPlaying(x, library, player), libIds)
 
-def getNotOnPlaylist(libIds, library, player):
-  return filter(lambda x: not ActivePlaylistEntry.isQueued(x, library, player), libIds)
+def getNotOnPlaylist(songs, player):
+  return filter(lambda x: not ActivePlaylistEntry.isQueued(x['id'], x['library_id'], player), songs)
 
 def addSongsToPlaylist(libIds, library, activePlayer, user):
   for lib_id in libIds:
@@ -56,29 +61,18 @@ def activePlaylist(request, player_id, player):
 def getActivePlaylist(player):
   return HttpJSONResponse(json.dumps(player.ActivePlaylist, cls=UDJEncoder))
 
-@HasNZParams(['to_add','to_remove'])
-def multiModActivePlaylist(request, player):
+@HasPlayerPermissions(['APR', 'APA'])
+@HasNZJSONParams(['to_add','to_remove'])
+def multiModActivePlaylist(request, player, json_params):
   player.lockActivePlaylist()
-  try:
-    toAdd = json.loads(request.POST['to_add'])
-    toRemove = json.loads(request.POST['to_remove'])
-  except ValueError:
-    return HttpResponseBadRequest('Bad JSON\n. Couldn\'t even parse.\n Given data:' + request.raw_post_data)
+  toAdd = json_params['to_add']
+  toRemove = json_params['to_remove']
 
-  user = getUserForTicket(request)
-  #Only admins and owners may remove songs from the playlist
-  if len(toRemove) != 0 and not (player.isAdmin(user) or player.owning_user==user):
-    return HttpResponseForbidden()
 
   try:
-    #0. lock active playlist
-    player.lockActivePlaylist()
-
-    default_library = player.DefaultLibrary
-
     #first, validate/process all our inputs
     # 1. Ensure none of the songs to be deleted aren't on the playlist
-    notOnPlaylist = getNotOnPlaylist(toRemove, default_library, player)
+    notOnPlaylist = getNotOnPlaylist(toRemove, player)
     if len(notOnPlaylist) > 0:
       toReturn = HttpJSONResponse(json.dumps(notOnPlaylist), status=404)
       toReturn[MISSING_RESOURCE_HEADER] = 'song'

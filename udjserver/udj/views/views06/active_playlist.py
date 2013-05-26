@@ -14,10 +14,10 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseNotAllow
 from django.core.exceptions import ObjectDoesNotExist
 
 def getAlreadyOnPlaylist(libIds, library, player):
-  return filter(lambda x: ActivePlaylistEntry.isQueuedOrPlaying(x, library, player), libIds)
+  return filter(lambda x: ActivePlaylistEntry.isQueuedOrPlaying(x, library.id, player), libIds)
 
 def getNotOnPlaylist(libIds, library, player):
-  return filter(lambda x: not ActivePlaylistEntry.isQueued(x, library, player), libIds)
+  return filter(lambda x: not ActivePlaylistEntry.isQueued(x, library.id, player), libIds)
 
 def addSongsToPlaylist(libIds, library, activePlayer, user):
   for lib_id in libIds:
@@ -147,10 +147,10 @@ def modActivePlaylist(request, player_id, player, lib_id):
 
 def add2ActivePlaylist(user, lib_id, default_library, player):
   player.lockActivePlaylist()
-  if ActivePlaylistEntry.isQueued(lib_id, default_library, player):
+  if ActivePlaylistEntry.isQueued(lib_id, default_library.id, player):
     voteSong(player, user, lib_id, 1)
     return HttpResponse()
-  elif ActivePlaylistEntry.isPlaying(lib_id, default_library, player):
+  elif ActivePlaylistEntry.isPlaying(lib_id, default_library.id, player):
     return HttpResponse()
 
   if LibraryEntry.songExsitsAndNotBanned(lib_id, default_library, player):

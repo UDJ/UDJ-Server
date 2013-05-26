@@ -298,18 +298,28 @@ class ActivePlaylistEntry(models.Model):
 
 
   @staticmethod
-  def isQueuedOrPlaying(songId, library, player):
-    return ActivePlaylistEntry.objects.filter(player=player, song__lib_id=songId, song__library=library)\
-        .exclude(state='RM').exclude(state='FN').exists()
+  def isQueuedOrPlaying(song_id, library, player):
+    return (ActivePlaylistEntry.objects.filter(player=player,
+                                               song__lib_id=song_id,
+                                               song__library__id=library_id)
+                                               .exclude(state='RM')
+                                               .exclude(state='FN').exists())
 
   @staticmethod
-  def isPlaying(songId, library, player):
-    return ActivePlaylistEntry.objects.filter(player=player, song__lib_id=songId, song__library=library, state='PL').exists()
+  def isPlaying(song_id, library_id, player):
+    return (ActivePlaylistEntry.objects.filter(player=player,
+                                               song__lib_id=song_id,
+                                               song__library__id=library,
+                                               state='PL')
+                                               .exists())
 
   @staticmethod
-  def isQueued(songId, library, player):
-    return ActivePlaylistEntry.objects.filter(player=player, song__lib_id=songId, song__library=library)\
-        .exclude(state='RM').exclude(state='FN').exclude(state='PL').exists()
+  def isQueued(song_id, library_id, player):
+    return (ActivePlaylistEntry.objects.filter(player=player,
+                                              song__lib_id=songId,
+                                              song__library__id=library_id,
+                                              state='QE')
+                                              .exists())
 
   def __unicode__(self):
     return self.song.title + " added by " + self.adder.username
