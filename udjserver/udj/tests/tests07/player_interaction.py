@@ -350,8 +350,8 @@ class BlankCurrentSongTestCase(AlejandroTestCase):
     self.assertEqual('song', response[MISSING_RESOURCE_HEADER])
 
 
-"""
-class LogoutTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
+class LogoutTests(EnsureActiveJeffTest):
+  playerid = 1
   def testLogout(self):
     response = self.doDelete('/players/1/users/user')
     self.assertEqual(response.status_code, 200)
@@ -359,6 +359,7 @@ class LogoutTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
     activeUserIds = [x.user.id for x in Player.objects.get(id=1).ActiveParticipants]
     self.assertFalse(3 in activeUserIds)
 
+"""
 
 class OwnerCurrentSongTestCase(udj.testhelpers.tests07.testclasses.CurrentSongTestCase):
   username="kurtis"
