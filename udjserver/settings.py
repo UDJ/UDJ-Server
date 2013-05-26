@@ -150,7 +150,7 @@ TICKET_VALIDITY_LENGTH=timedelta(days=6*30)
 
 DEFAULT_PLAYER_PERMISSIONS = [u'CSS', u'MOS', u'SPT', u'CVO', u'SSA', u'SLO', u'SPA',
                               u'KUS', u'BUS', u'APR', u'ELI', u'DLI', u'MPE', u'CEV', 
-                              u'HEV', u'MEV']
+                              u'HEV', u'MEV', u'APC']
 DEFAULT_SEARCH_RADIUS = 5
 MAX_SEARCH_RADIUS = 20
 MIN_SEARCH_RADIUS = 1

@@ -15,10 +15,8 @@ from udj.testhelpers.tests07.testclasses import (ZachTestCase,
                                                  LeeTestCase,
                                                  MattTestCase,
                                                  KurtisTestCase,
-                                                 JeffTestCase)
-"""
-, MattTestCase, JeffTestCase, LeeTestCase, KurtisTestCase
-"""
+                                                 JeffTestCase,
+                                                 EnsureActiveJeffTest)
 from udj.headers import FORBIDDEN_REASON_HEADER
 from udj.testhelpers.tests07.decorators import EnsureParticipationUpdated
 
@@ -55,8 +53,7 @@ class BeginParticipateTests(ZachTestCase):
     tempplayer = Player.objects.get(pk=4)
     PlayerPermission(player=tempplayer, group=tempgroup, permission=u'PWP').save()
     response = self.doPut('/players/4/users/user')
-    self.assertEqual(response.status_code, 403)
-    self.assertEqual(response[FORBIDDEN_REASON_HEADER], 'player-permission')
+    self.assertBadPlayerPermission(response)
 
   @EnsureParticipationUpdated(8, 6)
   def testClearKickFlag(self):
@@ -323,13 +320,18 @@ class CurrentSongTestCases(KurtisTestCase):
     self.assertFalse(ActivePlaylistEntry.objects.filter(song__library__id=1, state='PL').exists())
 
 
-"""
-class BadCurrentSongTestCases(JeffTestCase):
-  
-  @EnsureParticipationUpdated(3, 1)
+class BadCurrentSongTestCases(EnsureActiveJeffTest):
+  playerid = 1
+
   def testRemoveCurrentSongBadPemissions(self):
-    response = self.doPost('/udj/0_6/players/1/current_song', {'lib_id' : 1})
-"""
+    response = self.doDelete('/players/1/current_song')
+    self.assertBadPlayerPermission(response)
+
+  def testSetCurrentSongBadPermissions(self):
+    new_song = {'id' : '1', 'library_id' : '1'}
+    response = self.doJSONPost('/players/1/current_song', new_song)
+    self.assertBadPlayerPermission(response)
+
 
 """
 class BlankCurrentSongTestCase(DoesServerOpsTestCase):

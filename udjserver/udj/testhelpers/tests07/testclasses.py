@@ -4,7 +4,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User
 from udj.models import Ticket
 from udj.models import Participant
-from udj.headers import DJANGO_TICKET_HEADER
+from udj.headers import DJANGO_TICKET_HEADER, FORBIDDEN_REASON_HEADER
 from datetime import datetime
 
 class BasicUDJTestCase(TransactionTestCase):
@@ -52,6 +52,9 @@ class DoesServerOpsTestCase(BasicUDJTestCase):
   def isJSONResponse(self, response):
     self.assertEqual(response['Content-Type'], 'text/json; charset=utf-8')
 
+  def assertBadPlayerPermission(self, response):
+    self.assertEqual(response.status_code, 403, response.content)
+    self.assertEqual(response[FORBIDDEN_REASON_HEADER], 'player-permission')
 
 """
 class BasicPlayerAdministrationTests(DoesServerOpsTestCase):
