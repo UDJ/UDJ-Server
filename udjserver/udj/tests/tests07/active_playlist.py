@@ -48,14 +48,12 @@ class GetActivePlaylistTests(udj.testhelpers.tests07.testclasses.EnsureActiveJef
 
 
 class PlaylistModTests(KurtisTestCase):
-  """
   def testBasicSongRemove(self):
     response = self.doDelete('/players/1/active_playlist/songs/1/2')
     self.assertEqual(response.status_code, 200)
 
     shouldBeRemoved = ActivePlaylistEntry.objects.get(pk=2)
     self.assertEqual('RM', shouldBeRemoved.state)
-  """
 
   def testPlaylistMultiMod(self):
     toAdd = [{'id' : '9', 'library_id' : '1'}]

@@ -316,7 +316,7 @@ class ActivePlaylistEntry(models.Model):
   @staticmethod
   def isQueued(song_id, library_id, player):
     return (ActivePlaylistEntry.objects.filter(player=player,
-                                              song__lib_id=songId,
+                                              song__lib_id=song_id,
                                               song__library__id=library_id,
                                               state='QE')
                                               .exists())
