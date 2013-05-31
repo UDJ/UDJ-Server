@@ -2,7 +2,7 @@ import json
 
 from udj.views.views07.JSONCodecs import UDJEncoder
 from udj.headers import MISSING_RESOURCE_HEADER
-from udj.views.views07.responses import HttpJSONResponse
+from udj.views.views07.responses import HttpJSONResponse, HttpResponseMissingResource
 from udj.models import Participant, Player, ActivePlaylistEntry, LibraryEntry, Vote
 from udj.views.views07.decorators import (PlayerExists,
                                           PlayerIsActive,
@@ -15,7 +15,7 @@ from udj.views.views07.authdecorators import (NeedsAuth,
 
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 
 def getAlreadyOnPlaylist(songs, library, player):
@@ -25,19 +25,19 @@ def getAlreadyOnPlaylist(songs, library, player):
 def getNotOnPlaylist(songs, player):
   return filter(lambda x: not ActivePlaylistEntry.isQueued(x['id'], x['library_id'], player), songs)
 
-def addSongsToPlaylist(libIds, library, activePlayer, user):
+def addSongsToPlaylist(libIds, library_id, activePlayer, user):
   for lib_id in libIds:
-    libEntry = LibraryEntry.objects.get(library=library, lib_id=lib_id)
+    libEntry = LibraryEntry.objects.get(library__id=library_id, lib_id=lib_id)
 
     addedEntry = ActivePlaylistEntry(song=libEntry, adder=user, player=activePlayer)
     addedEntry.save()
 
     Vote(playlist_entry=addedEntry, user=user, weight=1).save()
 
-def removeSongsFromPlaylist(libIds, library, activePlayer, user):
+def removeSongsFromPlaylist(libIds, library_id, activePlayer, user):
   for lib_id in libIds:
     playlistEntry = ActivePlaylistEntry.objects.get(
-      song__library=library,
+      song__library__id=library_id,
       song__lib_id=lib_id,
       state='QE')
     playlistEntry.state='RM'
@@ -65,7 +65,6 @@ def getActivePlaylist(player):
 @HasPlayerPermissions(['APR', 'APA'])
 @HasNZJSONParams(['to_add','to_remove'])
 def multiModActivePlaylist(request, player, json_params):
-
 
 
   """
@@ -121,6 +120,8 @@ def multiModActivePlaylist(request, player, json_params):
     return HttpResponseBadRequest('Bad JSON\n' + 'toAdd: ' + str(toAdd) + '\ntoRemove: ' + str(toRemove))
   except TypeError:
     return HttpResponseBadRequest('Bad JSON\n' + 'toAdd: ' + str(toAdd) + '\ntoRemove: ' + str(toRemove))
+  except KeyError:
+    return HttpResponseBadRequest('Bad JSON\n' + 'toAdd: ' + str(toAdd) + '\ntoRemove: ' + str(toRemove))
 
 
   return HttpResponse()
@@ -134,41 +135,37 @@ def multiModActivePlaylist(request, player, json_params):
 @IsOwnerOrParticipates
 @UpdatePlayerActivity
 @transaction.commit_on_success
-def modActivePlaylist(request, player_id, player, lib_id):
+def modActivePlaylist(request, player_id, player, library_id, song_id):
   user = getUserForTicket(request)
   if request.method == 'PUT':
-    return add2ActivePlaylist(user, lib_id, player.DefaultLibrary, player)
+    return add2ActivePlaylist(user, song_id, library_id, player)
   elif request.method == 'DELETE':
-    if not (user == player.owning_user or player.isAdmin(user)):
-      return HttpResponseForbidden()
-    return removeFromActivePlaylist(request, user, lib_id, player.DefaultLibrary, player)
+    return removeFromActivePlaylist(request, user, lib_id, library_id, player)
 
 
-def add2ActivePlaylist(user, lib_id, default_library, player):
+@HasPlayerPermissions(['APA'])
+def add2ActivePlaylist(user, song_id, library_id, player):
   player.lockActivePlaylist()
-  if ActivePlaylistEntry.isQueued(lib_id, default_library, player):
-    voteSong(player, user, lib_id, 1)
+  if ActivePlaylistEntry.isQueued(song_id, library_id, player):
+    voteSong(player, user, song_id, library_id, 1)
     return HttpResponse()
-  elif ActivePlaylistEntry.isPlaying(lib_id, default_library, player):
+  elif ActivePlaylistEntry.isPlaying(song_id, library_id, player):
     return HttpResponse()
 
-  if LibraryEntry.songExsitsAndNotBanned(lib_id, default_library, player):
-    addSongsToPlaylist([lib_id], default_library, player, user)
+  if LibraryEntry.songExsitsAndNotBanned(song_id, library_id, player):
+    addSongsToPlaylist([song_id], library_id, player, user)
   else:
-    toReturn = HttpResponseNotFound()
-    toReturn[MISSING_RESOURCE_HEADER] = 'song'
-    return toReturn
+    return HttpResponseMissingResource('song')
 
   return HttpResponse(status=201)
 
-def removeFromActivePlaylist(request, user, lib_id, default_library, player):
+@HasPlayerPermissions(['APR'])
+def removeFromActivePlaylist(request, user, song_id, library_id, player):
   player.lockActivePlaylist()
   try:
-    removeSongsFromPlaylist([lib_id], default_library, player, user)
+    removeSongsFromPlaylist([song_id], library_id, player, user)
   except ObjectDoesNotExist:
-    toReturn = HttpResponseNotFound()
-    toReturn[MISSING_RESOURCE_HEADER] = 'song'
-    return toReturn
+    return HttpResponseMissingResource('song')
 
   return HttpResponse()
 
@@ -194,13 +191,13 @@ def voteSongDown(request, player_id, lib_id, player):
 def voteSongUp(request, player_id, lib_id, player):
   return voteSong(player, getUserForTicket(request), lib_id, 1)
 
-def voteSong(player, user, lib_id, weight):
+def voteSong(player, user, song_id, library_id, weight):
 
   try:
     playlistEntry = ActivePlaylistEntry.objects.get(
         player=player,
         song__lib_id=lib_id,
-        song__library=player.DefaultLibrary,
+        song__library__id=library_id,
         state='QE')
   except ObjectDoesNotExist:
     toReturn = HttpResponseNotFound()

@@ -91,7 +91,7 @@ def multiModActivePlaylist(request, player):
     # 2. Ensure all of the songs to be added actually exists in the library
     notInLibrary = []
     for songId in toAdd:
-      if not LibraryEntry.songExsitsAndNotBanned(songId, player.DefaultLibrary, player):
+      if not LibraryEntry.songExsitsAndNotBanned(songId, player.DefaultLibrary.id, player):
         notInLibrary.append(songId)
 
     if len(notInLibrary) > 0:
@@ -153,7 +153,7 @@ def add2ActivePlaylist(user, lib_id, default_library, player):
   elif ActivePlaylistEntry.isPlaying(lib_id, default_library.id, player):
     return HttpResponse()
 
-  if LibraryEntry.songExsitsAndNotBanned(lib_id, default_library, player):
+  if LibraryEntry.songExsitsAndNotBanned(lib_id, default_library.id, player):
     addSongsToPlaylist([lib_id], default_library, player, user)
   else:
     toReturn = HttpResponseNotFound()

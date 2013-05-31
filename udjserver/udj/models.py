@@ -67,18 +67,18 @@ class LibraryEntry(models.Model):
   is_deleted = models.BooleanField(default=False)
 
   @staticmethod
-  def songExists(songId, library, player):
+  def songExists(song_id, library_id, player):
     entry = LibraryEntry.objects.filter(
-      lib_id=songId,
-      library=library,
+      lib_id=song_id,
+      library__id=library_id,
       is_deleted=False)
     return entry.exists()
 
   @staticmethod
-  def songExsitsAndNotBanned(songId, library, player):
+  def songExsitsAndNotBanned(song_id, library_id, player):
     entry = LibraryEntry.objects.filter(
-      lib_id=songId,
-      library=library,
+      lib_id=song_id,
+      library__id=library_id,
       is_deleted=False)
     return entry.exists() and not entry[0].is_banned(player)
 
@@ -298,7 +298,7 @@ class ActivePlaylistEntry(models.Model):
 
 
   @staticmethod
-  def isQueuedOrPlaying(song_id, library, player):
+  def isQueuedOrPlaying(song_id, library_id, player):
     return (ActivePlaylistEntry.objects.filter(player=player,
                                                song__lib_id=song_id,
                                                song__library__id=library_id)
@@ -309,7 +309,7 @@ class ActivePlaylistEntry(models.Model):
   def isPlaying(song_id, library_id, player):
     return (ActivePlaylistEntry.objects.filter(player=player,
                                                song__lib_id=song_id,
-                                               song__library__id=library,
+                                               song__library__id=library_id,
                                                state='PL')
                                                .exists())
 

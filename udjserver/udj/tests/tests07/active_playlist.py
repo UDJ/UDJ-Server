@@ -1,4 +1,5 @@
 import json
+
 import udj
 from udj.models import (Player,
                         LibraryEntry,
@@ -8,6 +9,8 @@ from udj.models import (Player,
                         SortingAlgorithm)
 from udj.testhelpers.tests07.decorators import EnsureParticipationUpdated
 from udj.headers import MISSING_RESOURCE_HEADER
+from udj.testhelpers.tests07.testclasses import KurtisTestCase
+
 from datetime import datetime
 
 class GetActivePlaylistTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
@@ -44,29 +47,104 @@ class GetActivePlaylistTests(udj.testhelpers.tests07.testclasses.EnsureActiveJef
     jsonResponse = json.loads(response.content)
 
 
+class PlaylistModTests(KurtisTestCase):
+  """
+  def testBasicSongRemove(self):
+    response = self.doDelete('/players/1/active_playlist/songs/1/2')
+    self.assertEqual(response.status_code, 200)
+
+    shouldBeRemoved = ActivePlaylistEntry.objects.get(pk=2)
+    self.assertEqual('RM', shouldBeRemoved.state)
+  """
+
+  def testPlaylistMultiMod(self):
+    toAdd = [{'id' : '9', 'library_id' : '1'}]
+    toRemove = [{'id' : '3', 'library_id' : '1'}]
+
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
+    )
+    self.assertEqual(response.status_code, 200, response.content)
+    #make sure song was queued
+    addedSong = ActivePlaylistEntry.objects.get(
+      player__id=1, song__lib_id='9', song__library__id=1, state='QE')
+    #make sure song was removed
+    self.assertFalse(ActivePlaylistEntry.objects.filter(
+      player__id=1,
+      song__lib_id='3',
+      song__library__id=1,
+      state='QE').exists())
+    self.assertTrue(ActivePlaylistEntry.objects.filter(
+      player__id=1,
+      song__lib_id='3',
+      song__library__id=1,
+      state='RM').exists())
+
+  def testBadRemoveMultiMod(self):
+    toAdd = [{'id' : '9', 'library_id' : '1'}]
+    toRemove = [{'id' : '3', 'library_id' : '1'}, {'id' : '6', 'library_id' : '1'}]
+
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
+    )
+    self.assertEqual(response.status_code, 404, response.content)
+    self.assertEqual(response[MISSING_RESOURCE_HEADER], 'song')
+
+    responseJSON = json.loads(response.content)
+    self.assertEqual([6], responseJSON)
+
+    #ensure 9 wasn't added
+    self.assertFalse(ActivePlaylistEntry.objects.filter(
+      player__id='1',
+      song__lib_id='9',
+      song__library=1,
+      state="QE").exists())
+
+    #ensure 3 is still queued
+    ActivePlaylistEntry.objects.get(
+      player__id='1',
+      song__lib_id='3',
+      song__library__id=1,
+      state="QE")
+
+  def testDuplicateAddMultiMod(self):
+    sixInitVoteCount = len(ActivePlaylistEntry.objects.get(player__id=1,
+                                                           song__library__id=1,
+                                                           song__lib_id=6).Upvoters)
+
+    toAdd = [{'id' : '9', 'library_id' : '1'}, {'id' : '6', 'library_id' : '1'}]
+    toRemove = [{'id' : '3', 'library_id' : '1'}]
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
+    )
+    self.assertEqual(200, response.status_code, response.content)
+
+    #ensure 9 was added
+    self.assertTrue(ActivePlaylistEntry.objects.filter(
+      song__library__id='1',
+      song__lib_id='9',
+      player=1,
+      state="QE").exists())
+
+    #ensure 3 is no longer queued
+    ActivePlaylistEntry.objects.get(
+      song__library__id=1,
+      song__lib_id='3',
+      player=1,
+      state="RM")
+
+    #ensure the vote count for 6 hasn't changed since it's the current song.
+    sixNewVoteCount = len(ActivePlaylistEntry.objects.get(player__id=1, 
+                                                          song__lib_id=6,
+                                                          song__library__id=1).Upvoters)
+    self.assertEqual(sixInitVoteCount, sixNewVoteCount)
+
+
+
 """
-
-
-class OwnerPlaylistModTests(udj.testhelpers.tests06.testclasses.PlaylistModTests):
-  username='kurtis'
-  userpass='testkurtis'
-
-class AdminPlaylistModTests(udj.testhelpers.tests06.testclasses.PlaylistModTests):
-  username="lucas"
-  userpass="testlucas"
-
-  def setUp(self):
-    super(udj.testhelpers.tests06.testclasses.PlaylistModTests, self).setUp()
-    lucas = Participant.objects.get(user__id=5, player__id=1)
-    lucas.time_last_interaction = datetime.now()
-    lucas.save()
-    self.oldtime = lucas.time_last_interaction
-
-
-  def tearDown(self):
-    lucas = Participant.objects.get(user__id=5, player__id=1)
-    self.assertTrue(lucas.time_last_interaction > self.oldtime)
-
 
 class ParticipantPlaylistModTests(udj.testhelpers.tests06.testclasses.EnsureActiveJeffTest):
 

@@ -61,10 +61,10 @@ urlpatterns += patterns('udj.views.views07.player_interaction',
 
 urlpatterns += patterns('udj.views.views07.active_playlist',
   (r'^players/(?P<player_id>\d+)/active_playlist$', 'activePlaylist'),
+  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<library_id>\d+)/(?P<song_id>.*)$', 'modActivePlaylist'),
 )
 
 """
-  (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)$', 'modActivePlaylist'),
   (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)/upvote$', 
     'voteSongUp'),
   (r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<lib_id>\d+)/downvote$', 
