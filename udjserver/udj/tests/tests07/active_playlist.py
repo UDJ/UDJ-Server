@@ -91,7 +91,7 @@ class PlaylistModTests(KurtisTestCase):
     self.assertEqual(response[MISSING_RESOURCE_HEADER], 'song')
 
     responseJSON = json.loads(response.content)
-    self.assertEqual([6], responseJSON)
+    self.assertEqual([{'id' : '6', 'library_id' : '1'}], responseJSON)
 
     #ensure 9 wasn't added
     self.assertFalse(ActivePlaylistEntry.objects.filter(
