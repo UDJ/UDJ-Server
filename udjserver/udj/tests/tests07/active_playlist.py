@@ -245,17 +245,16 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
 
 
 
-  """
   @EnsureParticipationUpdated(3,1)
   def testMultiAdd(self):
-    toAdd = [9,10]
+    toAdd = [{"library_id" : "1" , "id" : "9"},{"library_id" : "1", "id" : "10"}]
     toRemove = []
 
-    response = self.doPost(
-      '/udj/0_6/players/1/active_playlist',
-      {'to_add' : json.dumps(toAdd), 'to_remove' : json.dumps(toRemove)}
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
     )
-    self.assertEqual(200, response.status_code)
+    self.assertEqual(200, response.status_code, response.content)
 
     song9 = ActivePlaylistEntry.objects.get(
       song__library__id=1,
@@ -271,15 +270,15 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
     self.assertEqual(0, len(song10.Downvoters))
 
   @EnsureParticipationUpdated(3,1)
-  def testForbiddenRemove(self):
+  def testComplexForbiddenRemove(self):
     toAdd = [9,10]
     toRemove = [3]
 
-    response = self.doPost(
-      '/udj/0_6/players/1/active_playlist',
-      {'to_add' : json.dumps(toAdd), 'to_remove' : json.dumps(toRemove)}
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
     )
-    self.assertEqual(403, response.status_code)
+    self.assertBadPlayerPermission(response)
 
     self.assertFalse(ActivePlaylistEntry.objects.filter(
       song__library__id=1,
@@ -294,12 +293,12 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
   def testMultiAddWithDuplicateSong(self):
     initialUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=1).Upvoters)
 
-    toAdd = [1,10]
+    toAdd = [{"library_id" : "1", "id" : "1"},{"library_id": "1", "id" : "10" }]
     toRemove = []
 
-    response = self.doPost(
-      '/udj/0_6/players/1/active_playlist',
-      {'to_add' : json.dumps(toAdd), 'to_remove' : json.dumps(toRemove)}
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
     )
     self.assertEqual(200, response.status_code)
 
@@ -316,7 +315,6 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
       state="QE")
     self.assertEqual(1, len(song10.Upvoters))
     self.assertEqual(0, len(song10.Downvoters))
-"""
 
 """
 

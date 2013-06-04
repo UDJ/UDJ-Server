@@ -91,6 +91,7 @@ def multiModActivePlaylist(request, player, json_params):
       toReturn = HttpJSONResponse(json.dumps(notOnPlaylist), status=404)
       toReturn[MISSING_RESOURCE_HEADER] = 'song'
       return toReturn
+    
 
     # 2. Ensure all of the songs to be added actually exists in the library
     notInLibrary = filter(lambda x: not LibraryEntry.songExsitsAndNotBanned(x['id'],
@@ -98,7 +99,6 @@ def multiModActivePlaylist(request, player, json_params):
                                                                             player),
                           toAdd)
     if len(notInLibrary) > 0:
-      print "About to print not in library"
       toReturn = HttpJSONResponse(json.dumps(notInLibrary), content_type="text/json", status=404)
       toReturn[MISSING_RESOURCE_HEADER] = 'song'
       return toReturn
