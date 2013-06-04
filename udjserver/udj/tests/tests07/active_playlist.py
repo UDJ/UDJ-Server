@@ -142,14 +142,14 @@ class PlaylistModTests(KurtisTestCase):
 
 
 
-"""
 
-class ParticipantPlaylistModTests(udj.testhelpers.tests06.testclasses.EnsureActiveJeffTest):
+class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
+  playerid=1
 
   @EnsureParticipationUpdated(3, 1)
   def testSimpleAdd(self):
 
-    response = self.doPut('/udj/0_6/players/1/active_playlist/songs/9')
+    response = self.doPut('/players/1/active_playlist/songs/1/9')
     self.assertEqual(response.status_code, 201)
 
     added = ActivePlaylistEntry.objects.get(
@@ -158,16 +158,16 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests06.testclasses.EnsureActi
 
   @EnsureParticipationUpdated(3, 1)
   def testAddRemovedSong(self):
-    response = self.doPut('/udj/0_6/players/1/active_playlist/songs/10')
+    response = self.doPut('/players/1/active_playlist/songs/1/10')
     self.assertEqual(response.status_code, 201)
 
     added = ActivePlaylistEntry.objects.get(
-      song__library__id=1, song__lib_id=10, state='QE')
+      song__library__id=1, song__lib_id=u'10', state='QE')
     vote = Vote.objects.get(playlist_entry=added)
 
   @EnsureParticipationUpdated(3, 1)
   def testAddBannedSong(self):
-    response = self.doPut('/udj/0_6/players/1/active_playlist/songs/4')
+    response = self.doPut('/players/1/active_playlist/songs/1/4')
     self.assertEqual(response.status_code, 404)
 
     self.assertFalse( ActivePlaylistEntry.objects.filter(
@@ -175,16 +175,16 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests06.testclasses.EnsureActi
 
   @EnsureParticipationUpdated(3, 1)
   def testAddDeletedSong(self):
-    response = self.doPut('/udj/0_6/players/1/active_playlist/songs/8')
+    response = self.doPut('/players/1/active_playlist/songs/1/8')
     self.assertEqual(response.status_code, 404)
 
-    self.assertFalse( ActivePlaylistEntry.objects.filter(
+    self.assertFalse(ActivePlaylistEntry.objects.filter(
       song__library__id=1, song__lib_id=8, state='QE').exists())
 
   @EnsureParticipationUpdated(3, 1)
   def testAddQueuedSong(self):
     initialUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=1).Upvoters)
-    response = self.doPut('/udj/0_6/players/1/active_playlist/songs/1')
+    response = self.doPut('/players/1/active_playlist/songs/1/1')
     self.assertEqual(response.status_code, 200)
     afterUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=1).Upvoters)
     self.assertEqual(initialUpvoteCount+1, afterUpvoteCount)
@@ -192,20 +192,21 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests06.testclasses.EnsureActi
 
   @EnsureParticipationUpdated(3, 1)
   def testAddPlayingSong(self):
-    initialUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=1).Upvoters)
-    response = self.doPut('/udj/0_6/players/1/active_playlist/songs/6')
+    initialUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=6).Upvoters)
+    response = self.doPut('/players/1/active_playlist/songs/1/6')
     self.assertEqual(response.status_code, 200)
-    afterUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=1).Upvoters)
+    afterUpvoteCount = len(ActivePlaylistEntry.objects.get(song__library__id=1, song__lib_id=6).Upvoters)
     self.assertEqual(initialUpvoteCount, afterUpvoteCount)
 
   @EnsureParticipationUpdated(3, 1)
   def testRemoveQueuedSong(self):
-    response = self.doDelete('/udj/0_6/players/1/active_playlist/songs/3')
+    response = self.doDelete('/players/1/active_playlist/songs/1/3')
     self.assertEqual(response.status_code, 403)
 
     removedSong = ActivePlaylistEntry.objects.get(pk=3)
     self.assertEqual('QE', removedSong.state)
 
+  """
   @EnsureParticipationUpdated(3,1)
   def testMultiAdd(self):
     toAdd = [9,10]
@@ -276,7 +277,9 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests06.testclasses.EnsureActi
       state="QE")
     self.assertEqual(1, len(song10.Upvoters))
     self.assertEqual(0, len(song10.Downvoters))
+    """
 
+"""
 
 class VotingTests(udj.testhelpers.tests06.testclasses.EnsureActiveJeffTest):
 

@@ -138,22 +138,22 @@ def multiModActivePlaylist(request, player, json_params):
 @transaction.commit_on_success
 def modActivePlaylist(request, player_id, player, library_id, song_id):
   if request.method == 'PUT':
-    return add2ActivePlaylist(request.udjuser, song_id, library_id, player)
+    return add2ActivePlaylist(request, song_id, library_id, player)
   elif request.method == 'DELETE':
     return removeFromActivePlaylist(request, request.udjuser, song_id, library_id, player)
 
 
-@HasPlayerPermissions(['APA'])
-def add2ActivePlaylist(user, song_id, library_id, player):
+@HasPlayerPermissions(['APA'], player_arg_position=3)
+def add2ActivePlaylist(request, song_id, library_id, player):
   player.lockActivePlaylist()
   if ActivePlaylistEntry.isQueued(song_id, library_id, player):
-    voteSong(player, reqeust.user, song_id, library_id, 1)
+    voteSong(player, request.udjuser, song_id, library_id, 1)
     return HttpResponse()
   elif ActivePlaylistEntry.isPlaying(song_id, library_id, player):
     return HttpResponse()
 
   if LibraryEntry.songExsitsAndNotBanned(song_id, library_id, player):
-    addSongsToPlaylist([song_id], library_id, player, user)
+    addSongsToPlaylist([{'id' : song_id , 'library_id' : library_id}], player, request.udjuser)
   else:
     return HttpResponseMissingResource('song')
 
@@ -196,7 +196,7 @@ def voteSong(player, user, song_id, library_id, weight):
   try:
     playlistEntry = ActivePlaylistEntry.objects.get(
         player=player,
-        song__lib_id=lib_id,
+        song__lib_id=song_id,
         song__library__id=library_id,
         state='QE')
   except ObjectDoesNotExist:
