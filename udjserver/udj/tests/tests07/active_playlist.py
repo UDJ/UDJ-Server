@@ -199,12 +199,29 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
     self.assertEqual(initialUpvoteCount, afterUpvoteCount)
 
   @EnsureParticipationUpdated(3, 1)
-  def testRemoveQueuedSong(self):
+  def testRemoveQueuedSongWithoutPermission(self):
     response = self.doDelete('/players/1/active_playlist/songs/1/3')
-    self.assertEqual(response.status_code, 403)
+    self.assertBadPlayerPermission(response)
 
     removedSong = ActivePlaylistEntry.objects.get(pk=3)
     self.assertEqual('QE', removedSong.state)
+
+    toAdd = []
+    toRemove = [{'id' : '3', 'library_id' : '1'}]
+
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
+    )
+    self.assertBadPlayerPermission(response)
+    removedSong = ActivePlaylistEntry.objects.get(pk=3)
+    self.assertEqual('QE', removedSong.state)
+
+
+  """
+  @EnsureParticipationUpdated(3, 1)
+  def testAddQueuedSongWithoutPermission(self):
+  """
 
   """
   @EnsureParticipationUpdated(3,1)
@@ -277,7 +294,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
       state="QE")
     self.assertEqual(1, len(song10.Upvoters))
     self.assertEqual(0, len(song10.Downvoters))
-    """
+"""
 
 """
 

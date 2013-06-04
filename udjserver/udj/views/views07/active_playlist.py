@@ -2,7 +2,6 @@ import json
 
 from udj.views.views07.JSONCodecs import UDJEncoder
 from udj.headers import MISSING_RESOURCE_HEADER
-from udj.views.views07.responses import HttpJSONResponse, HttpResponseMissingResource
 from udj.models import Participant, Player, ActivePlaylistEntry, LibraryEntry, Vote
 from udj.views.views07.decorators import (PlayerExists,
                                           PlayerIsActive,
@@ -12,6 +11,9 @@ from udj.views.views07.decorators import (PlayerExists,
 from udj.views.views07.authdecorators import (NeedsAuth,
                                               HasPlayerPermissions,
                                               IsOwnerOrParticipates)
+from udj.views.views07.responses import (HttpJSONResponse,
+                                         HttpResponseMissingResource,
+                                         HttpResponseForbiddenWithReason)
 
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
@@ -62,7 +64,6 @@ def activePlaylist(request, player_id, player):
 def getActivePlaylist(player):
   return HttpJSONResponse(json.dumps(player.ActivePlaylist, cls=UDJEncoder))
 
-@HasPlayerPermissions(['APR', 'APA'])
 @HasNZJSONParams(['to_add','to_remove'])
 def multiModActivePlaylist(request, player, json_params):
 
@@ -74,6 +75,12 @@ def multiModActivePlaylist(request, player, json_params):
   player.lockActivePlaylist()
   toAdd = json_params['to_add']
   toRemove = json_params['to_remove']
+
+  if len(toAdd) > 0 and not player.user_has_permission('APA', request.udjuser):
+    return HttpResponseForbiddenWithReason('player-permission')
+
+  if len(toRemove) > 0 and not player.user_has_permission('APR', request.udjuser):
+    return HttpResponseForbiddenWithReason('player-permission')
 
 
   try:
