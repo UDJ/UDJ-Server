@@ -2,6 +2,8 @@ import json
 
 import udj
 from udj.models import (Player,
+                        PlayerPermissionGroup,
+                        PlayerPermission,
                         LibraryEntry,
                         ActivePlaylistEntry,
                         Participant,
@@ -218,10 +220,30 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
     self.assertEqual('QE', removedSong.state)
 
 
-  """
   @EnsureParticipationUpdated(3, 1)
-  def testAddQueuedSongWithoutPermission(self):
-  """
+  def testAddSongWithoutPermission(self):
+    PlayerPermission(player=Player.objects.get(pk=1), 
+                     permission="APA",
+                     group=PlayerPermissionGroup.objects.get(pk=1)).save()
+    response = self.doPut('/players/1/active_playlist/songs/1/9')
+    self.assertBadPlayerPermission(response)
+
+    should_not_exists = ActivePlaylistEntry.objects.filter(song__lib_id=u'9', song__library__id=9)
+    self.assertFalse(should_not_exists.exists())
+
+    toAdd = [{'id' : '9', 'library_id' : '1'}]
+    toRemove = []
+
+    response = self.doJSONPost(
+      '/players/1/active_playlist',
+      {'to_add' : toAdd, 'to_remove' : toRemove}
+    )
+    self.assertBadPlayerPermission(response)
+
+    should_not_exists = ActivePlaylistEntry.objects.filter(song__lib_id=u'9', song__library__id=9)
+    self.assertFalse(should_not_exists.exists())
+
+
 
   """
   @EnsureParticipationUpdated(3,1)
