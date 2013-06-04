@@ -185,8 +185,9 @@ def removeFromActivePlaylist(request, user, song_id, library_id, player):
 @IsOwnerOrParticipates
 @UpdatePlayerActivity
 @AcceptsMethods(['POST', 'PUT'])
-def voteSongDown(request, player_id, lib_id, player):
-  return voteSong(player, request.udjuser, lib_id, -1)
+@HasPlayerPermissions(['APD'], player_arg_position=4)
+def voteSongDown(request, player_id, library_id, lib_id, player):
+  return voteSong(player, request.udjuser, lib_id, library_id, -1)
 
 @csrf_exempt
 @NeedsAuth
@@ -195,8 +196,9 @@ def voteSongDown(request, player_id, lib_id, player):
 @IsOwnerOrParticipates
 @UpdatePlayerActivity
 @AcceptsMethods(['POST', 'PUT'])
-def voteSongUp(request, player_id, lib_id, player):
-  return voteSong(player, getUserForTicket(request), lib_id, 1)
+@HasPlayerPermissions(['APU'], player_arg_position=4)
+def voteSongUp(request, player_id, library_id, lib_id, player):
+  return voteSong(player, request.udjuser, lib_id, library_id, 1)
 
 def voteSong(player, user, song_id, library_id, weight):
 
