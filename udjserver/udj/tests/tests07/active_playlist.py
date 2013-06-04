@@ -346,3 +346,26 @@ class VotingTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
     self.assertEqual(response.status_code, 200)
 
     upvote = Vote.objects.get(user__id=3, playlist_entry__song__id=2, weight=-1)
+
+
+  @EnsureParticipationUpdated(3, 1)
+  def testUpvoteWithoutPermission(self):
+    PlayerPermission(player=Player.objects.get(pk=1),
+                     permission="APU",
+                     group=PlayerPermissionGroup.objects.get(pk=1)).save()
+    response = self.doPut('/players/1/active_playlist/songs/1/1/upvote')
+    self.assertBadPlayerPermission(response)
+
+    non_existant_upvote = Vote.objects.filter(user__id=3, playlist_entry__song__id=1, weight=1)
+    self.assertFalse(non_existant_upvote.exists())
+
+  @EnsureParticipationUpdated(3, 1)
+  def testDownvoteWithoutPermission(self):
+    PlayerPermission(player=Player.objects.get(pk=1),
+                     permission="APD",
+                     group=PlayerPermissionGroup.objects.get(pk=1)).save()
+    response = self.doPut('/players/1/active_playlist/songs/1/1/downvote')
+    self.assertBadPlayerPermission(response)
+
+    non_existant_upvote = Vote.objects.filter(user__id=3, playlist_entry__song__id=1, weight=-1)
+    self.assertFalse(non_existant_upvote.exists())
