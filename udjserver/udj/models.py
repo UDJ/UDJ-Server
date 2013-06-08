@@ -142,6 +142,7 @@ class Library(models.Model):
   read_permission = models.CharField(max_length=2, choices=PERMISSION_CHOICES, default=u'OW')
   write_permission = models.CharField(max_length=2, choices=PERMISSION_CHOICES, default=u'OW')
   resolver = models.CharField(max_length=200, default="standard")
+  is_delete = models.BooleanField(default=False)
 
   def user_has_read_perm(self, user):
     return self.user_has_perm(user, self.read_permission, self.Readers)
@@ -265,6 +266,8 @@ class AssociatedLibrary(models.Model):
   def __unicode__(self):
     self.library.name + " is associated with player " + player.name
 
+class OfficialLibrary(models.Model):
+  library = models.ForeignKey(Library)
 
 class ActivePlaylistEntry(models.Model):
   STATE_CHOICES = (

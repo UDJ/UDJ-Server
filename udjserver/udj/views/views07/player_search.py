@@ -60,5 +60,6 @@ def playerSearch(request, max_results, offset):
   elif 'name' in request.GET and not request.GET['name'] == '':
     toReturn = toReturn.filter(name__icontains=request.GET['name'])
 
+  max_results = min(200, max_results)
   toReturn = toReturn[offset:offset+max_results]
   return HttpJSONResponse(json.dumps(toReturn, cls=UDJEncoder))

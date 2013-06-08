@@ -70,6 +70,13 @@ class UDJEncoder(json.JSONEncoder):
         'last_name' : obj.last_name
       }
     elif isinstance(obj, Library):
+      library_owner = {}
+      try:
+        owned_library = OwnedLibrary.objects.get(library__id=obj.id)
+        library_owner = owned_library.owner
+      except ObjectDoesNotExist:
+        pass
+
       return {
         'id' : str(obj.id),
         'name' : obj.name,
@@ -77,6 +84,8 @@ class UDJEncoder(json.JSONEncoder):
         'pub_key' : obj.pub_key,
         'read_permission' : obj.get_read_permission_display(),
         'write_permission' : obj.get_write_permission_display()
+        'owner' : library_owner,
+        'is_official' : True if OfficialLibrary.objects.filter(library__id=obj.id).exists else False
       }
     elif isinstance(obj, PlayerPermissionGroup):
       return {
