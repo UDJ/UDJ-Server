@@ -18,6 +18,18 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 
 
+def HasPagingSemantics(default_max_results):
+  def decorator(target):
+    def wrapper(*args, **kwargs):
+      request = args[0]
+      kwargs['max_results'] = int(request.GET.get('max_results', default_max_results))
+      kwargs['offset'] = int(request.GET.get('start_position', 0))
+      return target(*args, **kwargs)
+    return wrapper
+  return decorator
+
+
+
 def AcceptsMethods(acceptedMethods):
   def decorator(target):
     def wrapper(*args, **kwargs):
