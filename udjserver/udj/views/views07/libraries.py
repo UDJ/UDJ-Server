@@ -1,5 +1,8 @@
 import json
 
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+
 from udj.views.views07.JSONCodecs import UDJEncoder
 from udj.models import Library
 from udj.views.views07.decorators import (HasPagingSemantics,
@@ -12,12 +15,44 @@ from udj.views.views07.responses import (HttpJSONResponse,
 from udj.views.views07.authdecorators import (NeedsAuth,
                                               HasLibraryReadPermission,
                                               HasLibraryWritePermission)
+def addSongs(toAdd, library):
+  for song in toAdd:
+    newSong = LibraryEntry(library=library,
+                           lib_id=song['id'],
+                           title=song['title'],
+                           artist=song['artist'],
+                           album=song['album'],
+                           track=song['track'],
+                           genre=song['genre'],
+                           duration=song['duration']
+                          )
+    newSong.save()
 
-from settings import RESTRICTED_LIBRARY_NAMES
+def deleteSongs(toDelete, library):
+  for song_id in toDelete:
+    LibraryEntry.objects.get(library=library, lib_id=song_id).deleteSong()
 
+def getNonExistantLibIds(songIds, library):
+  return filter(lambda x: not LibraryEntry.songExists(x, library.id, player), songIds)
 
-from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction
+def getDuplicateAndConflictingIds(songs, library):
+  #This funciton seems like a potential performance bottleneck
+  conflictingIds = []
+  duplicateIds = []
+  for song in songs:
+    potentialDuplicate = LibraryEntry.objects.filter(library=library,
+                                                     lib_id=song['id'],
+                                                     is_deleted=False)
+    if potentialDuplicate.exists():
+      duplicateIds.append(song['id']) 
+      if (potentialDuplicate[0].title != song['title'] or
+          potentialDuplicate[0].artist != song['artist'] or
+          potentialDuplicate[0].album != song['album'] or
+          potentialDuplicate[0].track != song['track'] or
+          potentialDuplicate[0].genre != song['genre'] or
+          potentialDuplicate[0].duration != song['duration']):
+        conflictingIds.append(song['id'])
+  return (duplicateIds, conflictingIds)
 
 def HasLibrary(library_id_arg_pos=1):
   def decorator(target)
@@ -60,7 +95,7 @@ def get_libraries(request, max_results, offset)
 
   if 'owner' in request.GET:
     #Ok, this next line may not be quite right, I forgot how to do many to many relationships
-    to_return = to_return.filter(library__owned_library__owner__id=(int(request.GET['owner'])))
+    to_return = to_return.filter(owner__id=(int(request.GET['owner'])))
 
   if 'is_readable' in request.GET:
     to_return = filter(lambda x: x.user_has_read_perm(request.udjuser))
@@ -96,6 +131,7 @@ def library(request, library_id):
 def get_library_info(library_id, library):
   return HttpJSONResponse(json.dumps(library, cls=UDJEncoder))
 
+@csrf_exempt
 @HasLibrary
 @HasLibraryWritePermission
 def delete_library(request, library_id, library):
@@ -105,6 +141,7 @@ def delete_library(request, library_id, library):
   AssociatedLibrary.objects.filter(library=library).update(enabled=False)
   return HttpResponse()
 
+@csrf_exempt
 @HasLibrary
 @HasLibraryWritePermission
 def mod_library(request, library_id, library):
@@ -123,3 +160,62 @@ def mod_library(request, library_id, library):
 
   library.save()
   return HttpResponse()
+
+
+@csrf_exempt
+@HasLibrary
+@HasLibraryWritePermission
+@AcceptsMethods(['PUT', 'POST'])
+@csrf_exempt
+@transaction.commit_on_success
+def songs(request, library_id, library):
+  if request.method == 'PUT':
+    return addSingleSong(request, library)
+  elif request.method == 'POST':
+    return libraryMultiMod(request, library)
+
+@HasNZJSONParams(['id', 'title', 'artist', 'album', 'genre', 'track', 'duration'])
+def addSingleSong(request, library, json_params):
+  duplicateIds, conflictingIds = getDuplicateAndConflictingIds(json_params)
+  if len(duplicateIds) > 0:
+    return HttpResponse()
+  if len(conflictingIds) > 0:
+    return HttpResponse(status=409)
+
+  addSongs([json_params], library)
+  return HttpResponse()
+
+@HasNZJSONParams(['to_add', 'to_delete'])
+def libraryMultiMod(request, library, json_params):
+
+  try:
+    duplicateIds, conflictingIds = getDuplicateAndConflictingIds(json_params['to_add'])
+    if len(conflictingIds) > 0:
+      return HttpResponse(json.dumps(conflictingIds), status=409)
+
+    nonExistentIds = getNonExistantLibIds(json_params['to_delete'], library)
+    if len(nonExistentIds) > 0:
+      return HttpJSONResponse(json.dumps(nonExistentIds), status=404)
+
+    addSongs(filter(lambda song: song['id'] not in duplicateIds, json_params['to_add'], library))
+    deleteSongs(json_params['to_delete'], library)
+  except KeyError as e:
+    return HttpResponseBadRequest('Bad JSON.\n Bad key: ' + str(e) )
+  except ValueError as f:
+    return HttpResponseBadRequest('Bad JSON.\n Bad value: ' + str(f) )
+
+  return HttpResponse()
+
+
+
+@csrf_exempt
+@HasLibrary
+@HasLibraryWritePermission
+@AcceptsMethods(['DELETE'])
+@csrf_exempt
+def deleteSong(request, library_id, song_id, library):
+  try:
+    LibraryEntry.objects.get(library=library, lib_id=song_id).delete()
+    return HttpResponse()
+  except ObjectDoesNotExist:
+    return HttpResponseMissingResource('song')
