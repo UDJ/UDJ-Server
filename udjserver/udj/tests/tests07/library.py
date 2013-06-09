@@ -29,11 +29,15 @@ class LibTestCases(KurtisTestCase):
       self.assertEqual({}, library['owner'])
     self.assertEqual(actual_library.IsOfficial, library['is_official'])
 
+  def verify_correct_library_ids(self, library_json, required_ids):
+    self.assertEqual(len(required_ids), len(library_json))
+    for library in library_json:
+      self.assertTrue(library['id'] in required_ids)
 
 
   def testSimpleLibrariesGet(self):
     response = self.doGet('/libraries')
-    self.assertEqual(200, response.status_code, response.content)
+    self.assertGoodJSONResponse(response)
     library_json = json.loads(response.content)
     self.assertEqual(9, len(library_json))
 
@@ -43,18 +47,20 @@ class LibTestCases(KurtisTestCase):
 
   def testSearchLibraryByOwner(self):
     response = self.doGet('/libraries?owner=2')
-    self.assertEqual(200, response.status_code, response.content)
-    library_json = json.loads(response.content)
-    self.assertEqual(6, len(library_json))
-    library_ids = [1, 2, 4,5,6,7]
-    map(lambda x: self.assertTrue(int(x['id']) in library_ids), library_json)
+    self.assertGoodJSONResponse(response)
+    self.verify_correct_library_ids(json.loads(response.content),
+                                    [u'1', u'2', u'4', u'5', u'6', u'7'])
 
   def testSearchForOfficialLibraries(self):
     response = self.doGet('/libraries?is_official=true')
-    self.assertEqual(200, response.status_code, response.content)
-    library_json = json.loads(response.content)
-    self.assertEqual(1, len(library_json))
-    self.assertEqual(u'8', library_json[0]['id'])
+    self.assertGoodJSONResponse(response)
+    self.verify_correct_library_ids(json.loads(response.content), [u'8'])
+
+  def testSearchForLibrariesByName(self):
+    response = self.doGet('/libraries?name=default')
+    self.assertGoodJSONResponse(response)
+    self.verify_correct_library_ids(json.loads(response.content),
+                                    [u'1', u'3', u'2', u'4', u'5', u'6', u'7'])
 
 
 

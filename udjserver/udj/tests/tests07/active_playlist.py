@@ -21,8 +21,7 @@ class GetActivePlaylistTests(udj.testhelpers.tests07.testclasses.EnsureActiveJef
   @EnsureParticipationUpdated(3,1)
   def testGetPlaylist(self):
     response = self.doGet('/players/1/active_playlist')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     jsonResponse = json.loads(response.content)
     current_song = jsonResponse['current_song']
     realCurrentSong = ActivePlaylistEntry.objects.get(song__library__id=1, state='PL')
@@ -44,8 +43,7 @@ class GetActivePlaylistTests(udj.testhelpers.tests07.testclasses.EnsureActiveJef
     kurtisPlayer.save()
 
     response = self.doGet('/players/1/active_playlist')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     jsonResponse = json.loads(response.content)
 
 
@@ -89,7 +87,7 @@ class PlaylistModTests(KurtisTestCase):
       '/players/1/active_playlist',
       {'to_add' : toAdd, 'to_remove' : toRemove}
     )
-    self.assertEqual(response.status_code, 404, response.content)
+    self.assertGoodJSONResponse(response, 404)
     self.assertEqual(response[MISSING_RESOURCE_HEADER], 'song')
 
     responseJSON = json.loads(response.content)

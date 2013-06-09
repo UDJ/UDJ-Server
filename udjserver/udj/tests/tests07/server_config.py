@@ -7,8 +7,7 @@ class ServerConfigTests(KurtisTestCase):
 
   def testGetSortingAlgos(self):
     response = self.doGet('/sorting_algorithms')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     sortingAlgo = json.loads(response.content)
     self.assertEqual(3, len(SortingAlgorithm.objects.all()))
     for algo in sortingAlgo:
@@ -23,8 +22,7 @@ class ServerConfigTests(KurtisTestCase):
 
   def testGetSearchRadii(self):
     response = self.doGet('/player_search_radius')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     received_json = json.loads(response.content)
     self.assertEqual(MAX_SEARCH_RADIUS, received_json['max_radius'])
     self.assertEqual(MIN_SEARCH_RADIUS, received_json['min_radius'])
@@ -33,8 +31,7 @@ class ServerConfigTests(KurtisTestCase):
     expected_permissions = map(lambda x: PlayerPermission.PERMISSION_CODE_MAP[x],
                                DEFAULT_PLAYER_PERMISSIONS)
     response = self.doGet('/default_player_permissions')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     received_json = json.loads(response.content)
     self.assertEqual(len(expected_permissions), len(received_json))
     for perm in expected_permissions:

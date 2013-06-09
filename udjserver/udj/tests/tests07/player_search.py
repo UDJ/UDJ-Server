@@ -10,8 +10,7 @@ from settings import MIN_SEARCH_RADIUS, MAX_SEARCH_RADIUS
 class GetPlayersTests(JeffTestCase):
   def testGetNearbyPlayers(self):
     response = self.doGet('/players?latitude=40.11241&longitude=-88.222053')
-    self.assertEqual(response.status_code, 200, response.content)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(len(players), 3)
     firstPlayer = players[0]
@@ -31,8 +30,7 @@ class GetPlayersTests(JeffTestCase):
 
   def testGetPlayersByName(self):
     response = self.doGet('/players?name=kurtis')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(len(players), 2)
     firstPlayer = players[0]
@@ -45,37 +43,32 @@ class GetPlayersTests(JeffTestCase):
 
   def testLocationSearchWithLimit(self):
     response = self.doGet('/players?latitude=40.11241&longitude=-88.222053&max_results=1')
-    self.assertEqual(response.status_code, 200, response.content)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(len(players), 1)
 
   def testNameSearchWithLimit(self):
     response = self.doGet('/players?name=kurtis&max_results=1')
-    self.assertEqual(response.status_code, 200, response.content)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(len(players), 1)
 
   def testSearchWithRadius(self):
     response = self.doGet('/players?latitude=40.111595&longitude=-88.204847&radius=2')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(2, len(players))
 
   def testSearchWithRadiusAndLimit(self):
     response = self.doGet('/players?latitude=40.111595&longitude=-88.204847&radius=2&max_results=1')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(1, len(players))
     self.assertEqual('6', players[0]["id"])
 
   def testSearchWithRadiusLimitAndOffset(self):
     response = self.doGet('/players?latitude=40.111595&longitude=-88.204847&radius=2&max_results=1&start_position=1')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     players = json.loads(response.content)
     self.assertEqual(1, len(players))
     self.assertEqual('1', players[0]["id"])

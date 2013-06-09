@@ -19,8 +19,7 @@ class CreatePlayerTests(YunYoungTestCase):
     playerName = "Yunyoung Player"
     payload = {'name' : playerName } 
     response = self.doJSONPut('/players/player', payload)
-    self.assertEqual(response.status_code, 201, "Error: " + response.content)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response, 201)
     givenPlayerId = json.loads(response.content)['id']
     addedPlayer = Player.objects.get(pk=givenPlayerId)
     self.assertEqual(addedPlayer.name, playerName)
@@ -37,8 +36,7 @@ class CreatePlayerTests(YunYoungTestCase):
     passwordHash = hashPlayerPassword(password)
     payload = {'name' : playerName, 'password' : password}
     response = self.doJSONPut('/players/player', payload)
-    self.assertEqual(response.status_code, 201, "Error: " + response.content)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response, 201)
     givenPlayerId = json.loads(response.content)['id']
     addedPlayer = Player.objects.get(pk=givenPlayerId)
     self.assertEqual(addedPlayer.name, playerName)
@@ -62,8 +60,7 @@ class CreatePlayerTests(YunYoungTestCase):
     payload['location'] = location
 
     response = self.doJSONPut('/players/player', payload)
-    self.assertEqual(response.status_code, 201, "Error: " + response.content)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response, 201)
     givenPlayerId = json.loads(response.content)['id']
     addedPlayer = Player.objects.get(pk=givenPlayerId)
     self.assertEqual(addedPlayer.name, playerName)

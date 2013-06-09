@@ -49,7 +49,8 @@ class DoesServerOpsTestCase(BasicUDJTestCase):
                             **headers)
 
 
-  def isJSONResponse(self, response):
+  def assertGoodJSONResponse(self, response, status_code=200):
+    self.assertEqual(status_code, response.status_code, response.content)
     self.assertEqual(response['Content-Type'], 'text/json; charset=utf-8')
 
   def assertBadPlayerPermission(self, response):

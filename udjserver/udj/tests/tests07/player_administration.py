@@ -18,8 +18,7 @@ class DefaultOwnerAdminTests(KurtisTestCase):
 
   def testGetEnabledLibraries(self):
     response = self.doGet('/players/1/enabled_libraries')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     returned_libraries = json.loads(response.content)
     actual_libraries = Player.objects.get(pk=1).EnabledLibraries
     self.assertEqual(len(actual_libraries), len(returned_libraries))
@@ -223,8 +222,7 @@ class DefaultOwnerAdminTests(KurtisTestCase):
 
   def testGetBannedUsers(self):
     response = self.doGet('/players/1/banned_users')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     bannedUsers = json.loads(response.content)
     self.assertEqual(1, len(bannedUsers))
     self.assertEqual('8', bannedUsers[0]['id'])
@@ -232,8 +230,7 @@ class DefaultOwnerAdminTests(KurtisTestCase):
 
   def testGetPermissions(self):
     response = self.doGet('/players/1/permissions')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     permissions = json.loads(response.content)
     for perm in permissions.keys():
       perm_code = PlayerPermission.PERMISSION_NAME_MAP[perm]
@@ -289,8 +286,7 @@ class DefaultOwnerAdminTests(KurtisTestCase):
 
   def testGetPermissionGroups(self):
     response = self.doGet('/players/1/permission_groups')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     retrieved_groups = json.loads(response.content)
     actual_groups = PlayerPermissionGroup.objects.filter(player__id=1)
     self.assertEqual(len(actual_groups), len(retrieved_groups))
@@ -322,8 +318,7 @@ class DefaultOwnerAdminTests(KurtisTestCase):
 
   def testGetPermissionGroupMembers(self):
     response = self.doGet('/players/1/permission_groups/owner/members')
-    self.assertEqual(200, response.status_code)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     retreived_members = json.loads(response.content)
     actual_group = PlayerPermissionGroup.objects.get(player__id=1, name='owner')
     self.assertEqual(len(actual_group.Members),

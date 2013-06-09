@@ -81,8 +81,7 @@ class GetUsersTests(MattTestCase):
   @EnsureParticipationUpdated(9, 7)
   def testGetUsersSingle(self):
     response = self.doGet('/players/7/users')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     users = json.loads(response.content)
     self.assertEqual(1, len(users))
     expectedIds = ['9']
@@ -95,8 +94,7 @@ class GetUsersTests(MattTestCase):
     alex.time_last_interaction = datetime.now()
     alex.save()
     response = self.doGet('/players/7/users')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     users = json.loads(response.content)
     self.assertEqual(2, len(users))
     expectedIds = ['9', '10']
@@ -111,8 +109,7 @@ class GetAvailableMusicTests(udj.testhelpers.tests07.testclasses.EnsureActiveJef
   @EnsureParticipationUpdated(3,1)
   def testGetBasicMusic(self):
     response = self.doGet('/players/1/available_music?query=Third+Eye+Blind')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertEquals(4, len(songResults))
     expectedLibIds =['1','2','3','5']
@@ -122,16 +119,14 @@ class GetAvailableMusicTests(udj.testhelpers.tests07.testclasses.EnsureActiveJef
   @EnsureParticipationUpdated(3, 1)
   def testSimpleGetWithMax(self):
     response = self.doGet('/players/1/available_music?query=Third+Eye+Blind&max_results=2')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertEquals(2, len(songResults))
 
   @EnsureParticipationUpdated(3, 1)
   def testAlbumGet(self):
     response = self.doGet('/players/1/available_music?query=Bedlam+in+Goliath')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertEquals(2, len(songResults))
     expectedLibIds =['6','7']
@@ -145,16 +140,14 @@ class GetAvailableMusicTestsRdio(udj.testhelpers.tests07.testclasses.EnsureActiv
   @EnsureParticipationUpdated(3,8)
   def testGetBasicMusic(self):
     response = self.doGet('/players/8/available_music?query=Third+Eye+Blind')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertTrue(len(songResults) > 4)
 
   @EnsureParticipationUpdated(3,8)
   def testSimpleGetWithMax(self):
     response = self.doGet('/players/8/available_music?query=Third+Eye+Blind&max_results=2')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertEquals(2, len(songResults))
 
@@ -165,8 +158,7 @@ class GetArtistsTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
   @EnsureParticipationUpdated(3,1)
   def testGetArtists(self):
     response = self.doGet('/players/1/available_music/artists')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     jsonResponse = json.loads(response.content)
     self.assertEqual(3, len(jsonResponse))
     requiredArtists = [u'Skrillex', u'The Mars Volta', u'Third Eye Blind']
@@ -199,8 +191,7 @@ class GetRdioArtistsTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTe
   @EnsureParticipationUpdated(3,8)
   def testGetArtists(self):
     response = self.doGet('/players/8/available_music/artists')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     jsonResponse = json.loads(response.content)
     #This is bad, we should really only be getting back 3 but I don't
     #really have a good way of merging results from different libraries yet :/
@@ -241,8 +232,7 @@ class GetRecentlyPlayed(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest
   @EnsureParticipationUpdated(3,1)
   def testRecentlyPlayed(self):
     response = self.doGet('/players/1/recently_played')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     jsonResponse = json.loads(response.content)
     self.assertEqual(2, len(jsonResponse))
     self.assertEqual('7', jsonResponse[0]['song']['id'])
@@ -254,8 +244,7 @@ class GetRecentlyPlayed(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest
     to_delete.is_deleted = True
     to_delete.save()
     response = self.doGet('/players/1/recently_played')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     jsonResponse = json.loads(response.content)
     self.assertEqual(1, len(jsonResponse))
     self.assertEqual('7', jsonResponse[0]['song']['id'])
@@ -274,8 +263,7 @@ class GetRandoms(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
   @EnsureParticipationUpdated(3,1)
   def testSimpleGetRandom(self):
     response = self.doGet('/players/1/available_music/random_songs?max_randoms=2')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertEquals(2, len(songResults))
     for song in songResults:
@@ -291,8 +279,7 @@ class GetRdioRandoms(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
   @EnsureParticipationUpdated(3,8)
   def testSimpleGetRandom(self):
     response = self.doGet('/players/8/available_music/random_songs?max_randoms=4')
-    self.assertEqual(response.status_code, 200)
-    self.isJSONResponse(response)
+    self.assertGoodJSONResponse(response)
     songResults = json.loads(response.content)
     self.assertEquals(4, len(songResults))
     for song in songResults:
