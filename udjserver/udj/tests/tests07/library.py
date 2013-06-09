@@ -32,7 +32,8 @@ class LibTestCases(KurtisTestCase):
   def verify_correct_library_ids(self, library_json, required_ids):
     self.assertEqual(len(required_ids), len(library_json))
     for library in library_json:
-      self.assertTrue(library['id'] in required_ids)
+      self.assertTrue(library['id'] in required_ids,
+                      "{0} is not in {1}".format(library['id'], required_ids))
 
 
   def testSimpleLibrariesGet(self):
@@ -69,6 +70,11 @@ class LibTestCases(KurtisTestCase):
     self.verify_correct_library_ids(json.loads(response.content),
                                     [u'1', u'2', u'4', u'5', u'6', u'7', u'8'])
 
+  def testLimitedSearch(self):
+    response = self.doGet('/libraries?max_results=3&start_position=2')
+    self.assertGoodJSONResponse(response)
+    self.verify_correct_library_ids(json.loads(response.content),
+                                    [u'3', u'4', u'5'])
 
   """
   def testSimpleAdd(self):

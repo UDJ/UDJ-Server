@@ -101,7 +101,6 @@ def get_libraries(request, max_results, offset):
   if 'is_readable' in request.GET:
     to_return = filter(lambda x: x.user_has_read_perm(request.udjuser), to_return)
 
-
   to_return = to_return[offset:offset+max_results]
 
   return HttpJSONResponse(json.dumps(to_return, cls=UDJEncoder))
