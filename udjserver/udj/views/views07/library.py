@@ -2,9 +2,10 @@ import json
 
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
+from django.http import HttpResponse, HttpResponseBadRequest
 
 from udj.views.views07.JSONCodecs import UDJEncoder
-from udj.models import Library
+from udj.models import Library, OwnedLibrary
 from udj.views.views07.decorators import (HasPagingSemantics,
                                           AcceptsMethods,
                                           HasNZJSONParams,
@@ -12,9 +13,8 @@ from udj.views.views07.decorators import (HasPagingSemantics,
 from udj.views.views07.responses import (HttpJSONResponse,
                                          HttpResponseForbiddenWithReason,
                                          HttpResponseMissingResource)
-from udj.views.views07.authdecorators import (NeedsAuth,
-                                              HasLibraryReadPermission,
-                                              HasLibraryWritePermission)
+from udj.views.views07.authdecorators import NeedsAuth
+
 def addSongs(toAdd, library):
   for song in toAdd:
     newSong = LibraryEntry(library=library,
@@ -55,8 +55,8 @@ def getDuplicateAndConflictingIds(songs, library):
   return (duplicateIds, conflictingIds)
 
 def HasLibrary(library_id_arg_pos=1):
-  def decorator(target)
-    def wrapper(*args, **kwargs)
+  def decorator(target):
+    def wrapper(*args, **kwargs):
       try:
         kwargs['library'] = Library.objects.get(pk=int(library_id))
         return target(*args, **kwargs)
@@ -66,12 +66,12 @@ def HasLibrary(library_id_arg_pos=1):
   return decorator
 
 def HasLibraryWritePermission(funciton):
-  def wrapper(*args, **kwargs)
+  def wrapper(*args, **kwargs):
     user = args[0].udjuser
     library = kwargs['library']
     if library.user_has_write_perm(user):
       return function(*args, **kwargs)
-    else
+    else:
       return HttpResponseForbiddenWithReason('write-permission')
   return wrapper
 
@@ -84,11 +84,10 @@ def libraries(request):
   else:
     return create_library(request)
 
-
-@HasPagingSemantics
-def get_libraries(request, max_results, offset)
+@HasPagingSemantics()
+def get_libraries(request, max_results, offset):
   max_results = min(max_results, 200)
-  to_return = Library.objects.all()
+  to_return = Library.objects.filter(is_deleted=False)
 
   if 'name' in request.GET:
     to_return = to_return.filter(name__icontains=request.GET['name'])
@@ -119,7 +118,7 @@ def create_library(request, json_params):
 @NeedsAuth
 @AcceptsMethods(['GET', 'DELETE', 'POST'])
 @transaction.commit_on_success
-def library(request, library_id):
+def library_query(request, library_id):
   if request.method == 'GET':
     return get_library_info(library_id)
   elif request.method == 'DELETE':
@@ -215,7 +214,7 @@ def libraryMultiMod(request, library, json_params):
 @csrf_exempt
 def deleteSong(request, library_id, song_id, library):
   try:
-    LibraryEntry.objects.get(library=library, lib_id=song_id).delete()
+    LibraryEntry.objects.get(library=library, lib_id=song_id).deleteSong()
     return HttpResponse()
   except ObjectDoesNotExist:
     return HttpResponseMissingResource('song')

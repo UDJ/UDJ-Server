@@ -8,7 +8,8 @@
       "pub_key" : "blkjdd",
       "read_permission" : "OW",
       "write_permission" : "OW",
-      "resolver" : "standard"
+      "resolver" : "standard",
+      "is_deleted" : false
     }
   },
   {
@@ -45,7 +46,8 @@
       "pub_key" : "blkjdd",
       "read_permission" : "OW",
       "write_permission" : "OW",
-      "resolver" : "standard"
+      "resolver" : "standard",
+      "is_deleted" : false
     }
   },
 
@@ -58,7 +60,8 @@
       "pub_key" : "blkjdd",
       "read_permission" : "OW",
       "write_permission" : "OW",
-      "resolver" : "standard"
+      "resolver" : "standard",
+      "is_deleted" : false
     }
   },
 
@@ -71,7 +74,8 @@
       "pub_key" : "blkjdd",
       "read_permission" : "OW",
       "write_permission" : "OW",
-      "resolver" : "standard"
+      "resolver" : "standard",
+      "is_deleted" : false
     }
   },
 
@@ -84,7 +88,8 @@
       "pub_key" : "blkjdd",
       "read_permission" : "OW",
       "write_permission" : "OW",
-      "resolver" : "standard"
+      "resolver" : "standard",
+      "is_deleted" : false
     }
   },
 
@@ -97,7 +102,8 @@
       "pub_key" : "",
       "read_permission" : "PU",
       "write_permission" : "NO",
-      "resolver" : "rdio"
+      "resolver" : "rdio",
+      "is_deleted" : false
     }
   },
 
@@ -109,12 +115,32 @@
       "description" : "A library no one can use. Not even Cthulu.",
       "pub_key" : "",
       "read_permission" : "NO",
-      "write_permission" : "NO"
+      "write_permission" : "NO",
+      "is_deleted" : false
+    }
+  },
+
+  {
+    "pk" :10,
+    "model" : "udj.library",
+    "fields" : {
+      "name" : "Deleted",
+      "description" : "A deleted library",
+      "pub_key" : "",
+      "read_permission" : "NO",
+      "write_permission" : "NO", "is_deleted" : true
     }
   },
 
 
 
+  {
+    "pk" : 1,
+    "model" : "udj.OfficialLibrary",
+    "fields" : {
+      "library" : 8
+    }
+  },
 
 
 

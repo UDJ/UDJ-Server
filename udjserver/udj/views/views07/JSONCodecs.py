@@ -1,17 +1,20 @@
 import json
-from udj.models import SortingAlgorithm
-from udj.models import Player
-from udj.models import PlayerLocation
-from udj.models import PlayerPassword
-from udj.models import SongSet
-from udj.models import SongSetEntry
-from udj.models import ActivePlaylistEntry
-from udj.models import PlaylistEntryTimePlayed
-from udj.models import Library
-from udj.models import Participant
-from udj.models import PlayerPermissionGroup
-from udj.models import Favorite
-from udj.models import LibraryEntry
+from udj.models import (SortingAlgorithm,
+                        Player,
+                        PlayerLocation,
+                        PlayerPassword,
+                        SongSet,
+                        SongSetEntry,
+                        ActivePlaylistEntry,
+                        PlaylistEntryTimePlayed,
+                        Library,
+                        Participant,
+                        PlayerPermissionGroup,
+                        Favorite,
+                        OfficialLibrary,
+                        LibraryEntry,
+                        OwnedLibrary
+                       )
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
@@ -83,9 +86,9 @@ class UDJEncoder(json.JSONEncoder):
         'description' : obj.description,
         'pub_key' : obj.pub_key,
         'read_permission' : obj.get_read_permission_display(),
-        'write_permission' : obj.get_write_permission_display()
+        'write_permission' : obj.get_write_permission_display(),
         'owner' : library_owner,
-        'is_official' : True if OfficialLibrary.objects.filter(library__id=obj.id).exists else False
+        'is_official' : True if OfficialLibrary.objects.filter(library__id=obj.id).exists() else False
       }
     elif isinstance(obj, PlayerPermissionGroup):
       return {

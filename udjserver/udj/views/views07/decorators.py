@@ -18,7 +18,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 
 
-def HasPagingSemantics(default_max_results):
+def HasPagingSemantics(default_max_results=100):
   def decorator(target):
     def wrapper(*args, **kwargs):
       request = args[0]

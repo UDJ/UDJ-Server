@@ -142,7 +142,8 @@ class Library(models.Model):
   read_permission = models.CharField(max_length=2, choices=PERMISSION_CHOICES, default=u'OW')
   write_permission = models.CharField(max_length=2, choices=PERMISSION_CHOICES, default=u'OW')
   resolver = models.CharField(max_length=200, default="standard")
-  is_delete = models.BooleanField(default=False)
+  is_deleted = models.BooleanField(default=False)
+
 
   def user_has_read_perm(self, user):
     return self.user_has_perm(user, self.read_permission, self.Readers)
@@ -161,6 +162,9 @@ class Library(models.Model):
       else:
         return True
 
+  @property
+  def IsOfficial(self):
+    return OfficialLibrary.objects.filter(library=self).exists()
 
 
   @property

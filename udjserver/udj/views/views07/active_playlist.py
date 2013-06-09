@@ -17,7 +17,7 @@ from udj.views.views07.responses import (HttpJSONResponse,
 
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 
 def getAlreadyOnPlaylist(songs, player):
@@ -209,9 +209,7 @@ def voteSong(player, user, song_id, library_id, weight):
         song__library__id=library_id,
         state='QE')
   except ObjectDoesNotExist:
-    toReturn = HttpResponseNotFound()
-    toReturn[MISSING_RESOURCE_HEADER] = 'song'
-    return toReturn
+    return HttpResponseMissingResource('song')
 
   vote, created = Vote.objects.get_or_create(playlist_entry=playlistEntry, user=user,
       defaults={'weight': weight})
