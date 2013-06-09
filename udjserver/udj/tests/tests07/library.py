@@ -63,6 +63,11 @@ class LibTestCases(KurtisTestCase):
                                     [u'1', u'3', u'2', u'4', u'5', u'6', u'7'])
 
 
+  def testSearchLibrariesByReadable(self):
+    response = self.doGet('/libraries?is_readable=true')
+    self.assertGoodJSONResponse(response)
+    self.verify_correct_library_ids(json.loads(response.content),
+                                    [u'1', u'2', u'4', u'5', u'6', u'7', u'8'])
 
 
   """

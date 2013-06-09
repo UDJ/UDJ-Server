@@ -159,8 +159,10 @@ class Library(models.Model):
         return True
       elif perm_level == 'US':
         return user in user_list
-      else:
+      elif perm_level == 'PU':
         return True
+      else:
+        return False
 
   @property
   def IsOfficial(self):
