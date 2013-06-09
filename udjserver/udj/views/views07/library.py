@@ -110,12 +110,12 @@ def get_libraries(request, max_results, offset):
 def create_library(request, json_params):
   new_library = Library(name=json_params['name'],
                         description=json_params['description'],
-                        public_key=json_params['public_key']
+                        pub_key=json_params['public_key']
                        )
   new_library.save()
   new_owned_library = OwnedLibrary(library=new_library, owner=request.udjuser)
   new_owned_library.save()
-  return HttpJSONResponse(json.dumps(new_library, cls=UDJEncoder))
+  return HttpJSONResponse(json.dumps(new_library, cls=UDJEncoder), status=201)
 
 @NeedsAuth
 @AcceptsMethods(['GET', 'DELETE', 'POST'])

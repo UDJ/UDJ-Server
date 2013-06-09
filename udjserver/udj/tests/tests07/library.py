@@ -76,6 +76,25 @@ class LibTestCases(KurtisTestCase):
     self.verify_correct_library_ids(json.loads(response.content),
                                     [u'3', u'4', u'5'])
 
+  def testCreateLibrary(self):
+    payload = {
+               "name" : "creation test library",
+               "description" : "a library to test library creation",
+               "public_key" : "alldkjek"
+              }
+    response = self.doJSONPut("/libraries", payload)
+    self.assertGoodJSONResponse(response, 201)
+    returned_json = json.loads(response.content)
+    new_library = Library.objects.get(pk=int(returned_json['id']))
+    self.assertEqual(new_library.name, payload['name'])
+    self.assertEqual(new_library.description, payload['description'])
+    self.assertEqual(new_library.pub_key, payload['public_key'])
+    self.assertEqual(new_library.get_read_permission_display(), 'owner')
+    self.assertEqual(new_library.get_write_permission_display(), 'owner')
+    self.assertEqual(new_library.Owner.id, 2)
+    self.assertEqual(new_library.IsOfficial, False)
+
+
   """
   def testSimpleAdd(self):
     payload = {

@@ -45,15 +45,16 @@ def HasNZJSONParams(necessaryParams):
   def decorator(target):
     def wrapper(*args, **kwargs):
       request = args[0]
+      received_params = {}
       try:
         received_params = json.loads(request.raw_post_data)
         for param in necessaryParams:
           if not param in received_params:
             return HttpResponseBadRequest("Must include non-blank " + param + " parameter")
+        kwargs['json_params'] = received_params
+        return target(*args, **kwargs)
       except ValueError:
         return HttpResponseBadRequest('Bad JSON')
-      kwargs['json_params'] = received_params
-      return target(*args, **kwargs)
     return wrapper
   return decorator
 
