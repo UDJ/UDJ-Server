@@ -94,7 +94,7 @@ def get_libraries(request, max_results, offset):
 
   if 'owner' in request.GET:
     #Ok, this next line may not be quite right, I forgot how to do many to many relationships
-    to_return = to_return.filter(owner__id=(int(request.GET['owner'])))
+    to_return = to_return.filter(ownedlibrary__owner__id=(int(request.GET['owner'])))
 
   if 'is_readable' in request.GET:
     to_return = filter(lambda x: x.user_has_read_perm(request.udjuser))

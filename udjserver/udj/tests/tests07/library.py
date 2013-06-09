@@ -41,6 +41,14 @@ class LibTestCases(KurtisTestCase):
       self.verify_library_info(library)
 
 
+  def testSearchLibraryByOwner(self):
+    response = self.doGet('/libraries?owner=2')
+    self.assertEqual(200, response.status_code, response.content)
+    library_json = json.loads(response.content)
+    self.assertEqual(6, len(library_json))
+
+
+
 
   """
   def testSimpleAdd(self):
