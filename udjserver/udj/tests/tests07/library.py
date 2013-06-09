@@ -46,6 +46,9 @@ class LibTestCases(KurtisTestCase):
     self.assertEqual(200, response.status_code, response.content)
     library_json = json.loads(response.content)
     self.assertEqual(6, len(library_json))
+    library_ids = [1, 2, 4,5,6,7]
+    map(lambda x: self.assertTrue(int(x['id']) in library_ids), library_json)
+
 
 
 
