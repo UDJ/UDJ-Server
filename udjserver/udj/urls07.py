@@ -1,13 +1,6 @@
 from django.conf.urls.defaults import patterns, include, url
 
-urlpatterns = patterns('udj.views.views07.library',
-  url(r'^libraries$', 'libraries'),
-  url(r'^libraries/(?P<library_id>\d+)$', 'library'),
-  url(r'^libraries/(?P<library_id>\d+)/songs$', 'songs'),
-  url(r'^libraries/(?P<library_id>\d+)/songs/(?P<song_id>\d+)$', 'delete_song'),
-)
-
-urlpatterns += patterns('udj.views.views07.user_modification',
+urlpatterns = patterns('udj.views.views07.user_modification',
   url(r'^user$', 'userMod'),
 )
 
@@ -73,6 +66,13 @@ urlpatterns += patterns('udj.views.views07.active_playlist',
   url(r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<library_id>\d+)/(?P<lib_id>\d+)/downvote$',
     'voteSongDown'),
   url(r'^players/(?P<player_id>\d+)/active_playlist/songs/(?P<library_id>\d+)/(?P<song_id>.*)$', 'modActivePlaylist'),
+)
+
+urlpatterns += patterns('udj.views.views07.library',
+  url(r'^libraries$', 'libraries'),
+  url(r'^libraries/(?P<library_id>\d+)$', 'library_query'),
+  url(r'^libraries/(?P<library_id>\d+)/songs$', 'songs'),
+  url(r'^libraries/(?P<library_id>\d+)/songs/(?P<song_id>\d+)$', 'delete_song'),
 )
 
 

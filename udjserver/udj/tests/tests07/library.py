@@ -105,6 +105,21 @@ class LibTestCases(KurtisTestCase):
     self.assertEqual(orig_num_libraries, len(Library.objects.all()))
 
 
+  def testGetSpecificLibrary(self):
+    response = self.doGet('/libraries/1')
+    self.assertGoodJSONResponse(response)
+    library_json = json.loads(response.content)
+    self.assertEqual(u'1', library_json['id'])
+    self.assertEqual(u'Kurtis Player Default Library', library_json['name'])
+    self.assertEqual(u'blah', library_json['description'])
+    self.assertEqual(u'blkjdd', library_json['pub_key'])
+    self.assertEqual(u'owner', library_json['read_permission'])
+    self.assertEqual(u'owner', library_json['write_permission'])
+    self.assertEqual(u'2', library_json['owner']['id'])
+    self.assertEqual(False, library_json['is_official'])
+
+
+
   """
   def testSimpleAdd(self):
     payload = {

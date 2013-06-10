@@ -3,6 +3,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.core.exceptions import ObjectDoesNotExist
 
 from udj.views.views07.JSONCodecs import UDJEncoder
 from udj.models import Library, OwnedLibrary
@@ -58,7 +59,7 @@ def HasLibrary(library_id_arg_pos=1):
   def decorator(target):
     def wrapper(*args, **kwargs):
       try:
-        kwargs['library'] = Library.objects.get(pk=int(library_id))
+        kwargs['library'] = Library.objects.get(pk=int(args[library_id_arg_pos]))
         return target(*args, **kwargs)
       except ObjectDoesNotExist:
         return HttpResponseMissingResource('library')
