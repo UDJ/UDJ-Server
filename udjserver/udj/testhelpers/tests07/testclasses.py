@@ -4,7 +4,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User
 from udj.models import Ticket
 from udj.models import Participant
-from udj.headers import DJANGO_TICKET_HEADER, FORBIDDEN_REASON_HEADER
+from udj.headers import DJANGO_TICKET_HEADER, FORBIDDEN_REASON_HEADER, MISSING_RESOURCE_HEADER
 from datetime import datetime
 
 class BasicUDJTestCase(TransactionTestCase):
@@ -47,6 +47,10 @@ class DoesServerOpsTestCase(BasicUDJTestCase):
                             json.dumps(payload),
                             content_type='text/json',
                             **headers)
+
+  def assertMissingResponse(self, response, resource):
+    self.assertEqual(404, response.status_code, response.content)
+    self.assertEqual(response[MISSING_RESOURCE_HEADER], resource)
 
 
   def assertGoodJSONResponse(self, response, status_code=200):

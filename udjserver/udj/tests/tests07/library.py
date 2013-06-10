@@ -118,7 +118,9 @@ class LibTestCases(KurtisTestCase):
     self.assertEqual(u'2', library_json['owner']['id'])
     self.assertEqual(False, library_json['is_official'])
 
-
+  def testBadGetSpecificLibrary(self):
+    response = self.doGet('/libraries/99999')
+    self.assertMissingResponse(response, 'library')
 
   """
   def testSimpleAdd(self):
