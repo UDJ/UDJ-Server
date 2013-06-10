@@ -2,6 +2,7 @@ import udj
 
 from udj.testhelpers.tests07.testclasses import KurtisTestCase
 from udj.models import Library, AssociatedLibrary, LibraryEntry
+from udj.headers import FORBIDDEN_REASON_HEADER
 
 import json
 
@@ -135,6 +136,19 @@ class LibTestCases(KurtisTestCase):
 
     for assoc_lib in AssociatedLibrary.objects.filter(library=deleted_library):
       self.assertFalse(assoc_lib.enabled)
+
+  def testNoWritePermissionLibraryDelete(self):
+    response = self.doDelete('/libraries/3')
+    self.assertEqual(403, response.status_code)
+    self.assertEqual('write-permission', response[FORBIDDEN_REASON_HEADER])
+
+    non_deleted_library = Library.objects.get(pk=3)
+
+    self.assertFalse(non_deleted_library.is_deleted)
+
+  def testDeleteNonExistentLibrary(self):
+    response = self.doDelete('/libraries/999999')
+    self.assertMissingResponse(response, 'library')
 
 
   """

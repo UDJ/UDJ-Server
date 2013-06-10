@@ -7,6 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from udj.views.views07.JSONCodecs import UDJEncoder
 from udj.models import Library, OwnedLibrary, LibraryEntry, AssociatedLibrary
+from udj.views.views07.authdecorators import NeedsAuth
+from udj.headers import FORBIDDEN_REASON_HEADER
 from udj.views.views07.decorators import (HasPagingSemantics,
                                           AcceptsMethods,
                                           HasNZJSONParams,
@@ -14,7 +16,6 @@ from udj.views.views07.decorators import (HasPagingSemantics,
 from udj.views.views07.responses import (HttpJSONResponse,
                                          HttpResponseForbiddenWithReason,
                                          HttpResponseMissingResource)
-from udj.views.views07.authdecorators import NeedsAuth
 
 def addSongs(toAdd, library):
   for song in toAdd:
