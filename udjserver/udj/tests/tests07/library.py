@@ -94,6 +94,16 @@ class LibTestCases(KurtisTestCase):
     self.assertEqual(new_library.Owner.id, 2)
     self.assertEqual(new_library.IsOfficial, False)
 
+  def testBadCreateLibrary(self):
+    orig_num_libraries = len(Library.objects.all())
+    payload = {
+               "name" : "creation test library",
+               "description" : "a library to test library creation",
+              }
+    response = self.doJSONPut("/libraries", payload)
+    self.assertEqual(400, response.status_code)
+    self.assertEqual(orig_num_libraries, len(Library.objects.all()))
+
 
   """
   def testSimpleAdd(self):

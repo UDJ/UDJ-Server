@@ -108,6 +108,7 @@ def get_libraries(request, max_results, offset):
 @csrf_exempt
 @HasNZJSONParams(['name', 'description', 'public_key'])
 def create_library(request, json_params):
+
   new_library = Library(name=json_params['name'],
                         description=json_params['description'],
                         pub_key=json_params['public_key']
