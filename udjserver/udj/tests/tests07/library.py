@@ -1,7 +1,7 @@
 import udj
 
 from udj.testhelpers.tests07.testclasses import KurtisTestCase
-from udj.models import Library
+from udj.models import Library, AssociatedLibrary, LibraryEntry
 
 import json
 
@@ -121,6 +121,21 @@ class LibTestCases(KurtisTestCase):
   def testBadGetSpecificLibrary(self):
     response = self.doGet('/libraries/99999')
     self.assertMissingResponse(response, 'library')
+
+  def testDeleteLibrary(self):
+    response = self.doDelete('/libraries/1')
+    self.assertEqual(200, response.status_code)
+
+    deleted_library = Library.objects.get(pk=1)
+
+    self.assertTrue(deleted_library.is_deleted)
+
+    for entry in LibraryEntry.objects.filter(library=deleted_library):
+      self.assertTrue(entry.is_deleted)
+
+    for assoc_lib in AssociatedLibrary.objects.filter(library=deleted_library):
+      self.assertFalse(assoc_lib.enabled)
+
 
   """
   def testSimpleAdd(self):

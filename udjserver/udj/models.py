@@ -146,10 +146,10 @@ class Library(models.Model):
 
 
   def user_has_read_perm(self, user):
-    return self.user_has_perm(user, self.read_permission, self.Readers)
+    return self.user_has_perm(user, self.read_permission, self.UserReaders)
 
   def user_has_write_perm(self, user):
-    return self.user_has_perm(user, self.write_permission, self.Writers)
+    return self.user_has_perm(user, self.write_permission, self.UserWriters)
 
   def user_has_perm(self, user, perm_level, user_list):
     if perm_level == 'NO':
@@ -178,17 +178,15 @@ class Library(models.Model):
       return None
 
   @property
-  def Readers(self):
-    user_ids = (AuthorizedLibraryUser.objects.filter(library=self, user_type=u'RE')
-                                             .values_list('user__id', flat=True))
-    return User.objects.filter(pk__in=user_ids)
+  def UserReaders(self):
+    return User.objects.filter(authorizedlibraryuser__library=self,
+                               authorizedlibraryuser__user_type='RE')
 
 
   @property
-  def Writer(self):
-    user_ids = (AuthorizedLibraryUser.objects.filter(library=self, user_type=u'WR')
-                                             .values_list('user__id', flat=True))
-    return User.objects.filter(pk__in=user_ids)
+  def UserWriters(self):
+    return User.objects.filter(authorizedlibraryuser__library=self,
+                               authorizedlibraryuser__user_type='WR')
 
   def getBannedIds(self, player):
     return (BannedLibraryEntry.objects.filter(player=player, song__library=self)

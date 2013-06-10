@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 
 from udj.views.views07.JSONCodecs import UDJEncoder
-from udj.models import Library, OwnedLibrary
+from udj.models import Library, OwnedLibrary, LibraryEntry, AssociatedLibrary
 from udj.views.views07.decorators import (HasPagingSemantics,
                                           AcceptsMethods,
                                           HasNZJSONParams,
@@ -66,7 +66,7 @@ def HasLibrary(library_id_arg_pos=1):
     return wrapper
   return decorator
 
-def HasLibraryWritePermission(funciton):
+def HasLibraryWritePermission(function):
   def wrapper(*args, **kwargs):
     user = args[0].udjuser
     library = kwargs['library']
@@ -135,7 +135,7 @@ def get_library_info(library_id, library):
   return HttpJSONResponse(json.dumps(library, cls=UDJEncoder))
 
 @csrf_exempt
-@HasLibrary
+@HasLibrary()
 @HasLibraryWritePermission
 def delete_library(request, library_id, library):
   library.is_deleted = True
@@ -145,7 +145,7 @@ def delete_library(request, library_id, library):
   return HttpResponse()
 
 @csrf_exempt
-@HasLibrary
+@HasLibrary()
 @HasLibraryWritePermission
 def mod_library(request, library_id, library):
   json = ""
