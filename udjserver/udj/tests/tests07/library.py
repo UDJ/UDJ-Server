@@ -151,6 +151,14 @@ class LibTestCases(KurtisTestCase):
     self.assertMissingResponse(response, 'library')
 
 
+  def testModLibraryName(self):
+    payload = {'name' : 'This is the new name! (just like the old name)'}
+    response = self.doJSONPost('/libraries/1', payload)
+    self.assertEqual(200, response.status_code)
+    changed_library = Library.objects.get(pk=1)
+    self.assertTrue(changed_library.name, payload['name'])
+
+
   """
   def testSimpleAdd(self):
     payload = {

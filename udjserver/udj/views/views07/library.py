@@ -60,7 +60,7 @@ def HasLibrary(library_id_arg_pos=1):
   def decorator(target):
     def wrapper(*args, **kwargs):
       try:
-        kwargs['library'] = Library.objects.get(pk=int(args[library_id_arg_pos]))
+        kwargs['library'] = Library.objects.get(pk=args[library_id_arg_pos])
         return target(*args, **kwargs)
       except ObjectDoesNotExist:
         return HttpResponseMissingResource('library')
@@ -129,7 +129,7 @@ def library_query(request, library_id):
   elif request.method == 'DELETE':
     return delete_library(request, library_id)
   else:
-    return mod_library(library_id)
+    return mod_library(request, library_id)
 
 @HasLibrary(library_id_arg_pos=0)
 def get_library_info(library_id, library):
@@ -138,7 +138,7 @@ def get_library_info(library_id, library):
 @csrf_exempt
 @HasLibrary()
 @HasLibraryWritePermission
-def delete_library(request, library_id, library):
+def delete_library(library_id, library):
   library.is_deleted = True
   library.save()
   LibraryEntry.objects.filter(library=library).update(is_deleted=True)
@@ -149,18 +149,18 @@ def delete_library(request, library_id, library):
 @HasLibrary()
 @HasLibraryWritePermission
 def mod_library(request, library_id, library):
-  json = ""
+  json_params = ""
   try:
-    json = json.loads(request.raw_post_data)
+    json_params = json.loads(request.raw_post_data)
   except ValueError:
     return HttpResponseBadRequest('Bad JSON')
 
-  if 'name' in json:
-    library.name = json['name']
-  if 'description' in json:
-    library.description = json['description']
-  if 'public_key' in json:
-    library.public_key = json['public_key']
+  if 'name' in json_params:
+    library.name = json_params['name']
+  if 'description' in json_params:
+    library.description = json_params['description']
+  if 'public_key' in json_params:
+    library.public_key = json_params['public_key']
 
   library.save()
   return HttpResponse()
