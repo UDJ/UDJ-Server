@@ -158,6 +158,19 @@ class LibTestCases(KurtisTestCase):
     changed_library = Library.objects.get(pk=1)
     self.assertTrue(changed_library.name, payload['name'])
 
+  def testModLibraryDescription(self):
+    payload = {'description' : 'This is the new name! (just like the old name)'}
+    response = self.doJSONPost('/libraries/1', payload)
+    self.assertEqual(200, response.status_code)
+    changed_library = Library.objects.get(pk=1)
+    self.assertTrue(changed_library.description, payload['description'])
+
+  def testModLibraryPubKey(self):
+    payload = {'pub_key' : 'newpubkey'}
+    response = self.doJSONPost('/libraries/1', payload)
+    self.assertEqual(200, response.status_code)
+    changed_library = Library.objects.get(pk=1)
+    self.assertTrue(changed_library.pub_key, payload['pub_key'])
 
   """
   def testSimpleAdd(self):
