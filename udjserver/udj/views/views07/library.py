@@ -200,7 +200,7 @@ def libraryMultiMod(request, library, json_params):
   try:
     duplicateIds, conflictingIds = getDuplicateAndConflictingIds(json_params['to_add'], library)
     if len(conflictingIds) > 0:
-      return HttpResponse(json.dumps(conflictingIds), status=409)
+      return HttpJSONResponse(json.dumps(conflictingIds), status=409)
 
     nonExistentIds = getNonExistantLibIds(json_params['to_delete'], library)
     if len(nonExistentIds) > 0:

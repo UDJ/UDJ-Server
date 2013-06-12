@@ -285,7 +285,28 @@ class LibContentModificationTests(KurtisTestCase):
     self.assertTrue(LibraryEntry.objects.get(library__id=1, lib_id=1).is_deleted)
     self.assertTrue(LibraryEntry.objects.get(library__id=1, lib_id=2).is_deleted)
 
-  """
+  def testUnauthorizedMultiMod(self):
+    to_add = [{
+      "id" : "11",
+      "title" : "Zero",
+      "artist" : "The Smashing Pumpkins",
+      "album" : "Mellon Collie And The Infinite Sadness",
+      "track" : 4,
+      "genre" : "Rock",
+      "duration" : 160
+    }]
+
+    to_delete = [1,2]
+
+    payload = { 'to_add' : to_add, 'to_delete' : to_delete}
+
+    response = self.doJSONPost('/libraries/3/songs', payload)
+    self.assertBadPermission(response, 'write-permission')
+
+    self.assertFalse(LibraryEntry.objects.filter(library__id=3, lib_id=11).exists())
+    self.assertFalse(LibraryEntry.objects.get(library__id=3, lib_id=1).is_deleted)
+    self.assertFalse(LibraryEntry.objects.get(library__id=3, lib_id=2).is_deleted)
+
 
   def testDuplicateMultiModAdd(self):
     to_add = [{
@@ -308,15 +329,14 @@ class LibContentModificationTests(KurtisTestCase):
     } 
     ]
     to_delete=[]
-    response = self.doPost('/udj/0_6/players/1/library',
-      {'to_add' : json.dumps(to_add), 'to_delete' : json.dumps(to_delete)})
+    payload = {'to_add' : to_add, 'to_delete' : to_delete}
+    response = self.doJSONPost('/libraries/1/songs', payload)
 
     self.assertEqual(200, response.status_code, response.content)
     #Make sure fuel got inserted.
     fuel = LibraryEntry.objects.get(library__id=1, lib_id='11')
 
-
-  def testBadDuplicateMultiModAdd(self):
+  def testConflictMultiModAdd(self):
     to_add = [{
       "id": "1",
       "title": "Semi-Charmed Life",
@@ -346,11 +366,11 @@ class LibContentModificationTests(KurtisTestCase):
     } 
     ]
     to_delete=[]
-    response = self.doPost('/udj/0_6/players/1/library',
-      {'to_add' : json.dumps(to_add), 'to_delete' : json.dumps(to_delete)})
 
-    self.assertEqual(409, response.status_code, response.content)
-    self.isJSONResponse(response)
+    payload = {'to_add' : to_add, 'to_delete' : to_delete}
+    response = self.doJSONPost('/libraries/1/songs', payload)
+
+    self.assertGoodJSONResponse(response, 409)
     jsonResponse = json.loads(response.content)
     self.assertEqual(['1'], jsonResponse)
     #Make sure we didn't add fuel because this was a bad one
@@ -369,11 +389,11 @@ class LibContentModificationTests(KurtisTestCase):
     }
     ]
     to_delete=['1','14']
-    response = self.doPost('/udj/0_6/players/1/library',
-      {'to_add' : json.dumps(to_add), 'to_delete' : json.dumps(to_delete)})
 
-    self.assertEqual(404, response.status_code, response.content)
-    self.isJSONResponse(response)
+    payload = {'to_add' : to_add, 'to_delete' : to_delete}
+    response = self.doJSONPost('/libraries/1/songs', payload)
+
+    self.assertGoodJSONResponse(response, 404)
     jsonResponse = json.loads(response.content)
     self.assertEqual(['14'], jsonResponse, jsonResponse)
     #Make sure we didn't add Fuel because this was a bad one
@@ -381,4 +401,3 @@ class LibContentModificationTests(KurtisTestCase):
     #Make sure we didn't delete Semi-Charmed Life because this request was bad
     self.assertTrue(LibraryEntry.objects.filter(library__id=1, lib_id=1, is_deleted=False).exists())
 
-"""
