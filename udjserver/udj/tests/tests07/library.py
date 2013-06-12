@@ -1,7 +1,7 @@
 import udj
 
 from udj.testhelpers.tests07.testclasses import KurtisTestCase
-from udj.models import Library, AssociatedLibrary, LibraryEntry
+from udj.models import Library, AssociatedLibrary, LibraryEntry, ActivePlaylistEntry
 from udj.headers import FORBIDDEN_REASON_HEADER
 
 import json
@@ -130,8 +130,7 @@ class LibTestCases(KurtisTestCase):
 
   def testNoWritePermissionLibraryDelete(self):
     response = self.doDelete('/libraries/3')
-    self.assertEqual(403, response.status_code)
-    self.assertEqual('write-permission', response[FORBIDDEN_REASON_HEADER])
+    self.assertBadPermission(response, 'write-permission')
 
     non_deleted_library = Library.objects.get(pk=3)
 
@@ -227,24 +226,43 @@ class LibContentModificationTests(KurtisTestCase):
     response = self.doJSONPut('/libraries/1/songs', payload)
     self.assertEqual(409, response.status_code, response.content)
 
+  def testUnauthorizedAdd(self):
+    payload = {
+      "id" : "10",
+      "title" : "Name Is Skrillex",
+      "artist" : "Skrillex",
+      "album" : "My Name Is Skirllex",
+      "track" : 1,
+      "genre" : "Dubstep",
+      "duration" : 291
+    }
+
+    response = self.doJSONPut('/libraries/3/songs', payload)
+    self.assertBadPermission(response, 'write-permission')
+
+    self.assertFalse(LibraryEntry.objects.filter(library__id=3, lib_id="10").exists())
+
 
   def testDelete(self):
     response = self.doDelete('/libraries/1/songs/10')
     self.assertEqual(200, response.status_code, response.content)
-    self.assertEqual(True, LibraryEntry.objects.get(library__id=1, lib_id=10).is_deleted)
+    self.assertTrue(LibraryEntry.objects.get(library__id=1, lib_id=10).is_deleted)
 
-  """
   def testDeleteOnPlaylist(self):
-    response = self.doDelete('/udj/0_6/players/1/library/5')
+    response = self.doDelete('/libraries/1/songs/5')
     self.assertEqual(200, response.status_code, response.content)
     self.assertEqual(True, LibraryEntry.objects.get(library__id=1, lib_id=5).is_deleted)
     self.assertEqual(u'RM', ActivePlaylistEntry.objects.get(pk=4).state)
 
-  def testBadDelete(self):
-    response = self.doDelete('/udj/0_6/players/1/library/12')
-    self.assertEqual(404, response.status_code, response.content)
-    self.assertEqual(response[MISSING_RESOURCE_HEADER], 'song')
+  def testMissingDelete(self):
+    response = self.doDelete('/libraries/1/songs/99999t')
+    self.assertMissingResponse(response, 'song')
 
+  def testUnauthorizedDelete(self):
+    response = self.doDelete('/libraries/3/songs/1')
+    self.assertBadPermission(response, 'write-permission')
+    self.assertFalse(LibraryEntry.objects.get(library__id=3, lib_id=1).is_deleted)
+  """
 
   def testMultiMod(self):
     to_add = [{
