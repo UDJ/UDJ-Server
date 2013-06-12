@@ -199,9 +199,8 @@ class LibContentModificationTests(KurtisTestCase):
     self.assertEqual(201, response.status_code, response.content)
     self.verifySongAdded(1, payload)
 
-  """
   def testDuplicateAdd(self):
-    payload = [{
+    payload = {
       "id" : "10",
       "title" : "My Name Is Skrillex",
       "artist" : "Skrillex",
@@ -209,13 +208,13 @@ class LibContentModificationTests(KurtisTestCase):
       "track" : 1,
       "genre" : "Dubstep",
       "duration" : 291
-    }]
+    }
 
-    response = self.doJSONPut('/udj/0_6/players/1/library/songs', json.dumps(payload))
+    response = self.doJSONPut('/libraries/1/songs', payload)
     self.assertEqual(201, response.status_code, response.content)
 
   def testBadDuplicateAdd(self):
-    payload = [{
+    payload = {
       "id" : "10",
       "title" : "Name Is Skrillex",
       "artist" : "Skrillex",
@@ -223,17 +222,18 @@ class LibContentModificationTests(KurtisTestCase):
       "track" : 1,
       "genre" : "Dubstep",
       "duration" : 291
-    }]
+    }
 
-    response = self.doJSONPut('/udj/0_6/players/1/library/songs', json.dumps(payload))
+    response = self.doJSONPut('/libraries/1/songs', payload)
     self.assertEqual(409, response.status_code, response.content)
 
 
   def testDelete(self):
-    response = self.doDelete('/udj/0_6/players/1/library/10')
+    response = self.doDelete('/libraries/1/songs/10')
     self.assertEqual(200, response.status_code, response.content)
     self.assertEqual(True, LibraryEntry.objects.get(library__id=1, lib_id=10).is_deleted)
 
+  """
   def testDeleteOnPlaylist(self):
     response = self.doDelete('/udj/0_6/players/1/library/5')
     self.assertEqual(200, response.status_code, response.content)

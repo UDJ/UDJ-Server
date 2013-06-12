@@ -46,7 +46,6 @@ def getDuplicateAndConflictingIds(songs, library):
                                                      lib_id=song['id'],
                                                      is_deleted=False)
     if potentialDuplicate.exists():
-      duplicateIds.append(song['id']) 
       if (potentialDuplicate[0].title != song['title'] or
           potentialDuplicate[0].artist != song['artist'] or
           potentialDuplicate[0].album != song['album'] or
@@ -54,6 +53,8 @@ def getDuplicateAndConflictingIds(songs, library):
           potentialDuplicate[0].genre != song['genre'] or
           potentialDuplicate[0].duration != song['duration']):
         conflictingIds.append(song['id'])
+      else:
+        duplicateIds.append(song['id'])
   return (duplicateIds, conflictingIds)
 
 def HasLibrary(library_id_arg_pos=1, use_kwargs=False):
@@ -186,7 +187,7 @@ def songs(request, library_id, library):
 def addSingleSong(request, library, json_params):
   duplicateIds, conflictingIds = getDuplicateAndConflictingIds([json_params], library)
   if len(duplicateIds) > 0:
-    return HttpResponse()
+    return HttpResponse(status=201)
   if len(conflictingIds) > 0:
     return HttpResponse(status=409)
 
@@ -217,11 +218,12 @@ def libraryMultiMod(request, library, json_params):
 
 
 @csrf_exempt
-@HasLibrary()
+@NeedsAuth
+@HasLibrary(use_kwargs=True)
 @HasLibraryWritePermission
 @AcceptsMethods(['DELETE'])
 @csrf_exempt
-def deleteSong(request, library_id, song_id, library):
+def delete_song(request, library_id, song_id, library):
   try:
     LibraryEntry.objects.get(library=library, lib_id=song_id).deleteSong()
     return HttpResponse()
