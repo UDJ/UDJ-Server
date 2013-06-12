@@ -8,15 +8,6 @@ import json
 
 class LibTestCases(KurtisTestCase):
 
-  def verifySongAdded(self, library_id, jsonSong):
-    addedSong = LibraryEntry.objects.get(library__id=library_id, lib_id=jsonSong['id'])
-    self.assertEqual(addedSong.title, jsonSong['title'])
-    self.assertEqual(addedSong.artist, jsonSong['artist'])
-    self.assertEqual(addedSong.album, jsonSong['album'])
-    self.assertEqual(addedSong.track, jsonSong['track'])
-    self.assertEqual(addedSong.genre, jsonSong['genre'])
-    self.assertEqual(addedSong.duration, jsonSong['duration'])
-
   def verify_library_info(self, library):
     actual_library = Library.objects.get(id=int(library['id']))
     self.assertEqual(actual_library.name, library['name'])
@@ -182,7 +173,17 @@ class LibTestCases(KurtisTestCase):
     response = self.doJSONPost('/libraries/99999999', payload)
     self.assertMissingResponse(response, 'library')
 
-  """
+class LibContentModificationTests(KurtisTestCase):
+
+  def verifySongAdded(self, library_id, jsonSong):
+    addedSong = LibraryEntry.objects.get(library__id=library_id, lib_id=jsonSong['id'])
+    self.assertEqual(addedSong.title, jsonSong['title'])
+    self.assertEqual(addedSong.artist, jsonSong['artist'])
+    self.assertEqual(addedSong.album, jsonSong['album'])
+    self.assertEqual(addedSong.track, jsonSong['track'])
+    self.assertEqual(addedSong.genre, jsonSong['genre'])
+    self.assertEqual(addedSong.duration, jsonSong['duration'])
+
   def testSimpleAdd(self):
     payload = {
       "id" : "11",
@@ -198,6 +199,7 @@ class LibTestCases(KurtisTestCase):
     self.assertEqual(201, response.status_code, response.content)
     self.verifySongAdded(1, payload)
 
+  """
   def testDuplicateAdd(self):
     payload = [{
       "id" : "10",

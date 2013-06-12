@@ -56,11 +56,14 @@ def getDuplicateAndConflictingIds(songs, library):
         conflictingIds.append(song['id'])
   return (duplicateIds, conflictingIds)
 
-def HasLibrary(library_id_arg_pos=1):
+def HasLibrary(library_id_arg_pos=1, use_kwargs=False):
   def decorator(target):
     def wrapper(*args, **kwargs):
       try:
-        kwargs['library'] = Library.objects.get(pk=args[library_id_arg_pos])
+        if use_kwargs:
+          kwargs['library'] = Library.objects.get(pk=kwargs['library_id'])
+        else:
+          kwargs['library'] = Library.objects.get(pk=args[library_id_arg_pos])
         return target(*args, **kwargs)
       except ObjectDoesNotExist:
         return HttpResponseMissingResource('library')
@@ -148,6 +151,7 @@ def delete_library(request, library_id, library):
 @csrf_exempt
 @HasLibrary()
 @HasLibraryWritePermission
+@NeedsJSON
 def mod_library(request, library_id, library):
   json_params = ""
   try:
@@ -167,10 +171,10 @@ def mod_library(request, library_id, library):
 
 
 @csrf_exempt
-@HasLibrary
+@NeedsAuth
+@HasLibrary(use_kwargs=True)
 @HasLibraryWritePermission
 @AcceptsMethods(['PUT', 'POST'])
-@csrf_exempt
 @transaction.commit_on_success
 def songs(request, library_id, library):
   if request.method == 'PUT':
@@ -180,14 +184,14 @@ def songs(request, library_id, library):
 
 @HasNZJSONParams(['id', 'title', 'artist', 'album', 'genre', 'track', 'duration'])
 def addSingleSong(request, library, json_params):
-  duplicateIds, conflictingIds = getDuplicateAndConflictingIds(json_params)
+  duplicateIds, conflictingIds = getDuplicateAndConflictingIds([json_params], library)
   if len(duplicateIds) > 0:
     return HttpResponse()
   if len(conflictingIds) > 0:
     return HttpResponse(status=409)
 
   addSongs([json_params], library)
-  return HttpResponse()
+  return HttpResponse(status=201)
 
 @HasNZJSONParams(['to_add', 'to_delete'])
 def libraryMultiMod(request, library, json_params):
@@ -213,7 +217,7 @@ def libraryMultiMod(request, library, json_params):
 
 
 @csrf_exempt
-@HasLibrary
+@HasLibrary()
 @HasLibraryWritePermission
 @AcceptsMethods(['DELETE'])
 @csrf_exempt
