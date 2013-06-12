@@ -62,9 +62,6 @@ class DoesServerOpsTestCase(BasicUDJTestCase):
     self.assertEqual(status_code, response.status_code, response.content)
     self.assertEqual(response['Content-Type'], 'text/json; charset=utf-8')
 
-  def assertBadPlayerPermission(self, response):
-    self.assertBadPlayerPermission(self, response, 'player-permission')
-
 """
 class BasicPlayerAdministrationTests(DoesServerOpsTestCase):
 

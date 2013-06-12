@@ -67,7 +67,7 @@ class LibraryEntry(models.Model):
   is_deleted = models.BooleanField(default=False)
 
   @staticmethod
-  def songExists(song_id, library_id, player):
+  def songExists(song_id, library_id):
     entry = LibraryEntry.objects.filter(
       lib_id=song_id,
       library__id=library_id,
@@ -76,12 +76,11 @@ class LibraryEntry(models.Model):
 
   @staticmethod
   def songExsitsAndNotBanned(song_id, library_id, player):
-    entry = LibraryEntry.objects.filter(
-      lib_id=song_id,
-      library__id=library_id,
-      is_deleted=False)
-    return entry.exists() and not entry[0].is_banned(player)
-
+    try:
+      return not (LibraryEntry.objects.get(lib_id=song_id, library__id=library_id, is_deleted=False)
+                                      .is_banned(player))
+    except ObjectDoesNotExist:
+      return False
 
   def is_banned(self, player):
     return BannedLibraryEntry.objects.filter(player=player, song=self).exists()

@@ -53,7 +53,7 @@ class BeginParticipateTests(ZachTestCase):
     tempplayer = Player.objects.get(pk=4)
     PlayerPermission(player=tempplayer, group=tempgroup, permission=u'PWP').save()
     response = self.doPut('/players/4/users/user')
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
   @EnsureParticipationUpdated(8, 6)
   def testClearKickFlag(self):
@@ -312,12 +312,12 @@ class BadCurrentSongTestCases(udj.testhelpers.tests07.testclasses.EnsureActiveJe
 
   def testRemoveCurrentSongBadPemissions(self):
     response = self.doDelete('/players/1/current_song')
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
   def testSetCurrentSongBadPermissions(self):
     new_song = {'id' : '1', 'library_id' : '1'}
     response = self.doJSONPost('/players/1/current_song', new_song)
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
 
 class BlankCurrentSongTestCase(AlejandroTestCase):

@@ -150,7 +150,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
   def testSimpleAdd(self):
 
     response = self.doPut('/players/1/active_playlist/songs/1/9')
-    self.assertEqual(response.status_code, 201)
+    self.assertEqual(201, response.status_code)
 
     added = ActivePlaylistEntry.objects.get(
       song__library__id=1, song__lib_id=9, state='QE')
@@ -201,7 +201,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
   @EnsureParticipationUpdated(3, 1)
   def testRemoveQueuedSongWithoutPermission(self):
     response = self.doDelete('/players/1/active_playlist/songs/1/3')
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
     removedSong = ActivePlaylistEntry.objects.get(pk=3)
     self.assertEqual('QE', removedSong.state)
@@ -213,7 +213,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
       '/players/1/active_playlist',
       {'to_add' : toAdd, 'to_remove' : toRemove}
     )
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
     removedSong = ActivePlaylistEntry.objects.get(pk=3)
     self.assertEqual('QE', removedSong.state)
 
@@ -224,7 +224,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
                      permission="APA",
                      group=PlayerPermissionGroup.objects.get(pk=1)).save()
     response = self.doPut('/players/1/active_playlist/songs/1/9')
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
     should_not_exists = ActivePlaylistEntry.objects.filter(song__lib_id=u'9', song__library__id=9)
     self.assertFalse(should_not_exists.exists())
@@ -236,7 +236,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
       '/players/1/active_playlist',
       {'to_add' : toAdd, 'to_remove' : toRemove}
     )
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
     should_not_exists = ActivePlaylistEntry.objects.filter(song__lib_id=u'9', song__library__id=9)
     self.assertFalse(should_not_exists.exists())
@@ -276,7 +276,7 @@ class ParticipantPlaylistModTests(udj.testhelpers.tests07.testclasses.EnsureActi
       '/players/1/active_playlist',
       {'to_add' : toAdd, 'to_remove' : toRemove}
     )
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
     self.assertFalse(ActivePlaylistEntry.objects.filter(
       song__library__id=1,
@@ -352,7 +352,7 @@ class VotingTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
                      permission="APU",
                      group=PlayerPermissionGroup.objects.get(pk=1)).save()
     response = self.doPut('/players/1/active_playlist/songs/1/1/upvote')
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
     non_existant_upvote = Vote.objects.filter(user__id=3, playlist_entry__song__id=1, weight=1)
     self.assertFalse(non_existant_upvote.exists())
@@ -363,7 +363,7 @@ class VotingTests(udj.testhelpers.tests07.testclasses.EnsureActiveJeffTest):
                      permission="APD",
                      group=PlayerPermissionGroup.objects.get(pk=1)).save()
     response = self.doPut('/players/1/active_playlist/songs/1/1/downvote')
-    self.assertBadPlayerPermission(response)
+    self.assertBadPermission(response, 'player-permission')
 
     non_existant_upvote = Vote.objects.filter(user__id=3, playlist_entry__song__id=1, weight=-1)
     self.assertFalse(non_existant_upvote.exists())

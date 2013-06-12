@@ -159,7 +159,7 @@ def add2ActivePlaylist(request, song_id, library_id, player):
   elif ActivePlaylistEntry.isPlaying(song_id, library_id, player):
     return HttpResponse()
 
-  if LibraryEntry.songExsitsAndNotBanned(song_id, library_id, player):
+  if LibraryEntry.songExsitsAndNotBanned(song_id, int(library_id), player):
     addSongsToPlaylist([{'id' : song_id , 'library_id' : library_id}], player, request.udjuser)
   else:
     return HttpResponseMissingResource('song')

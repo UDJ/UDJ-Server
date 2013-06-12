@@ -35,7 +35,7 @@ def deleteSongs(toDelete, library):
     LibraryEntry.objects.get(library=library, lib_id=song_id).deleteSong()
 
 def getNonExistantLibIds(songIds, library):
-  return filter(lambda x: not LibraryEntry.songExists(x, library.id, player), songIds)
+  return filter(lambda x: not LibraryEntry.songExists(x, library.id), songIds)
 
 def getDuplicateAndConflictingIds(songs, library):
   #This funciton seems like a potential performance bottleneck
@@ -198,7 +198,7 @@ def addSingleSong(request, library, json_params):
 def libraryMultiMod(request, library, json_params):
 
   try:
-    duplicateIds, conflictingIds = getDuplicateAndConflictingIds(json_params['to_add'])
+    duplicateIds, conflictingIds = getDuplicateAndConflictingIds(json_params['to_add'], library)
     if len(conflictingIds) > 0:
       return HttpResponse(json.dumps(conflictingIds), status=409)
 
@@ -206,7 +206,7 @@ def libraryMultiMod(request, library, json_params):
     if len(nonExistentIds) > 0:
       return HttpJSONResponse(json.dumps(nonExistentIds), status=404)
 
-    addSongs(filter(lambda song: song['id'] not in duplicateIds, json_params['to_add'], library))
+    addSongs(filter(lambda song: song['id'] not in duplicateIds, json_params['to_add']), library)
     deleteSongs(json_params['to_delete'], library)
   except KeyError as e:
     return HttpResponseBadRequest('Bad JSON.\n Bad key: ' + str(e) )

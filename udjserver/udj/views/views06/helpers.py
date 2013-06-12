@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.contrib.gis.geos import Point
 
 def getNonExistantLibIds(songIds, player):
-  return filter(lambda x: not LibraryEntry.songExists(x, player.DefaultLibrary.id, player), songIds)
+  return filter(lambda x: not LibraryEntry.songExists(x, player.DefaultLibrary.id), songIds)
 
 
 def setPlayerLocation(location, player):

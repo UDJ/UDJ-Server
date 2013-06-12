@@ -262,7 +262,6 @@ class LibContentModificationTests(KurtisTestCase):
     response = self.doDelete('/libraries/3/songs/1')
     self.assertBadPermission(response, 'write-permission')
     self.assertFalse(LibraryEntry.objects.get(library__id=3, lib_id=1).is_deleted)
-  """
 
   def testMultiMod(self):
     to_add = [{
@@ -277,13 +276,16 @@ class LibContentModificationTests(KurtisTestCase):
 
     to_delete = [1,2]
 
-    response = self.doPost('/udj/0_6/players/1/library',
-      {'to_add' : json.dumps(to_add), 'to_delete' : json.dumps(to_delete)})
+    payload = { 'to_add' : to_add, 'to_delete' : to_delete}
+
+    response = self.doJSONPost('/libraries/1/songs', payload)
 
     self.assertEqual(200, response.status_code, response.content)
-    self.verifySongAdded(to_add[0])
-    self.assertEqual(True, LibraryEntry.objects.get(library__id=1, lib_id=1).is_deleted)
-    self.assertEqual(True, LibraryEntry.objects.get(library__id=1, lib_id=2).is_deleted)
+    self.verifySongAdded(1, to_add[0])
+    self.assertTrue(LibraryEntry.objects.get(library__id=1, lib_id=1).is_deleted)
+    self.assertTrue(LibraryEntry.objects.get(library__id=1, lib_id=2).is_deleted)
+
+  """
 
   def testDuplicateMultiModAdd(self):
     to_add = [{
