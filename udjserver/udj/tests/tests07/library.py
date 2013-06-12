@@ -172,6 +172,16 @@ class LibTestCases(KurtisTestCase):
     changed_library = Library.objects.get(pk=1)
     self.assertTrue(changed_library.pub_key, payload['pub_key'])
 
+  def testBadLibraryInfoMod(self):
+    payload = {'pub_key' : 'newpubkey'}
+    response = self.doJSONPost('/libraries/3', payload)
+    self.assertBadPermission(response, 'write-permission')
+
+  def testNonExistentLibraryInfoMod(self):
+    payload = {'pub_key' : 'newpubkey'}
+    response = self.doJSONPost('/libraries/99999999', payload)
+    self.assertMissingResponse(response, 'library')
+
   """
   def testSimpleAdd(self):
     payload = {

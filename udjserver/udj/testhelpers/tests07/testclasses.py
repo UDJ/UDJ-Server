@@ -48,6 +48,11 @@ class DoesServerOpsTestCase(BasicUDJTestCase):
                             content_type='text/json',
                             **headers)
 
+  def assertBadPermission(self, response, reason):
+    self.assertEqual(response.status_code, 403, response.content)
+    self.assertEqual(response[FORBIDDEN_REASON_HEADER], reason)
+
+
   def assertMissingResponse(self, response, resource):
     self.assertEqual(404, response.status_code, response.content)
     self.assertEqual(response[MISSING_RESOURCE_HEADER], resource)
@@ -58,8 +63,7 @@ class DoesServerOpsTestCase(BasicUDJTestCase):
     self.assertEqual(response['Content-Type'], 'text/json; charset=utf-8')
 
   def assertBadPlayerPermission(self, response):
-    self.assertEqual(response.status_code, 403, response.content)
-    self.assertEqual(response[FORBIDDEN_REASON_HEADER], 'player-permission')
+    self.assertBadPlayerPermission(self, response, 'player-permission')
 
 """
 class BasicPlayerAdministrationTests(DoesServerOpsTestCase):
