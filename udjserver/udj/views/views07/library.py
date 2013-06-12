@@ -229,3 +229,20 @@ def delete_song(request, library_id, song_id, library):
     return HttpResponse()
   except ObjectDoesNotExist:
     return HttpResponseMissingResource('song')
+
+
+
+def read_list_query(request, library_id)
+  return HttpResponse()
+
+def write_list_query(request, library_id)
+  return HttpResponse()
+
+def get_read_access_token(request, library_id)
+  return HttpResponse()
+
+def get_write_access_token(request, library_id)
+  return HttpResponse()
+
+def get_check_token(request, library_id)
+  return HttpResponse()
