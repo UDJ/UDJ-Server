@@ -73,13 +73,16 @@ urlpatterns += patterns('udj.views.views07.library',
   url(r'^libraries/(?P<library_id>\d+)$', 'library_query'),
   url(r'^libraries/(?P<library_id>\d+)/songs$', 'songs'),
   url(r'^libraries/(?P<library_id>\d+)/songs/(?P<song_id>.*)$', 'delete_song'),
+)
+
+
+"""
   url(r'^libraries/(?P<library_id>\d+)/read_users', 'read_list_query'),
   url(r'^libraries/(?P<library_id>\d+)/write_users', 'write_list_query'),
   url(r'^libraries/(?P<library_id>\d+)/read_access_token', 'get_read_access_token'),
   url(r'^libraries/(?P<library_id>\d+)/write_access_token', 'get_write_access_token'),
   url(r'^libraries/(?P<library_id>\d+)/check_token', 'check_token'),
-)
-
+"""
 
 
 
