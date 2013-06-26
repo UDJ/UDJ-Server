@@ -246,3 +246,6 @@ def get_write_access_token(request, library_id):
 
 def get_check_token(request, library_id):
   return HttpResponse()
+
+def check_token(request, library_id):
+  return HttpResponse()
