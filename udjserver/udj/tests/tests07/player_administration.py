@@ -242,45 +242,45 @@ class DefaultOwnerAdminTests(KurtisTestCase):
         self.assertTrue(group in returned_perm_groups)
 
   def testAddPermission(self):
-    response = self.doPut('/players/1/permissions/set_sorting_algorithm/groups/empty_test1')
+    response = self.doPut('/players/1/permissions/set_sorting_algorithm/groups/11')
     self.assertEqual(200, response.status_code)
 
     test_perm1 = PlayerPermission.objects.filter(player__id=1,
                                                  permission=u'SSA',
-                                                 group__name=u'empty_test1')
+                                                 group__id=11)
     self.assertTrue(test_perm1.exists())
 
 
   def testAddBadPermission(self):
-    response = self.doPut('/players/1/permissions/invalid_perm/groups/empty_test1')
+    response = self.doPut('/players/1/permissions/invalid_perm/groups/11')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission', response[MISSING_RESOURCE_HEADER])
 
   def testAddPermissionWithBadGroup(self):
     self.assertTrue(Player.objects.filter(pk=1).exists())
-    response = self.doPut('/players/1/permissions/set_sorting_algorithm/groups/dontexists_mofo')
+    response = self.doPut('/players/1/permissions/set_sorting_algorithm/groups/9999999')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission-group', response[MISSING_RESOURCE_HEADER])
 
     self.assertFalse(PlayerPermission.objects.filter(player__id=1,
                                                      permission=u'SSA',
-                                                     group__name=u'empty_test1').exists())
+                                                     group__id=11).exists())
 
 
   def testRemovePermission(self):
-    response = self.doDelete('/players/1/permissions/set_sorting_algorithm/groups/owner')
+    response = self.doDelete('/players/1/permissions/set_sorting_algorithm/groups/1')
     self.assertEqual(200, response.status_code)
     self.assertFalse(PlayerPermission.objects.filter(player__id=1,
                                                      permission=u'SSA',
-                                                     group__name=u'owner').exists())
+                                                     group__id=1).exists())
 
   def testRemoveBadPermission(self):
-    response = self.doDelete('/players/1/permissions/invalid/groups/owner')
+    response = self.doDelete('/players/1/permissions/invalid/groups/1')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission', response[MISSING_RESOURCE_HEADER])
 
   def testRemovePermissionWithBadGroup(self):
-    response = self.doPut('/players/1/permissions/set_sorting_algorithm/groups/dontexists_mofo')
+    response = self.doPut('/players/1/permissions/set_sorting_algorithm/groups/99999999999')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission-group', response[MISSING_RESOURCE_HEADER])
 
@@ -298,68 +298,68 @@ class DefaultOwnerAdminTests(KurtisTestCase):
         existing_user  =current_actual_members.get(pk=user['id'])
 
   def testCreatePermissionGroup(self):
-    response = self.doPut('/players/1/permission_groups/blah_group')
+    response = self.doJSONPut('/players/1/permission_groups', {'name' : 'blah_group'})
     self.assertEqual(201, response.status_code)
     created_group = PlayerPermissionGroup.objects.get(player__id=1, name="blah_group")
 
   def testCreateExistingGroup(self):
-    response = self.doPut('/players/1/permission_groups/owner')
+    response = self.doJSONPut('/players/1/permission_groups', {'name' : 'owner'})
     self.assertEqual(409, response.status_code)
 
   def testRemovePermissionGroup(self):
-    response = self.doDelete('/players/1/permission_groups/owner')
+    response = self.doDelete('/players/1/permission_groups/1')
     self.assertEqual(200, response.status_code)
-    self.assertFalse(PlayerPermissionGroup.objects.filter(player__id=1, name='owner').exists())
+    self.assertFalse(PlayerPermissionGroup.objects.filter(player__id=1, id=1).exists())
 
   def testRemoveBadPermissionGroup(self):
-    response = self.doDelete('/players/1/permission_groups/dontexist')
+    response = self.doDelete('/players/1/permission_groups/9999999999')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission-group', response[MISSING_RESOURCE_HEADER])
 
   def testGetPermissionGroupMembers(self):
-    response = self.doGet('/players/1/permission_groups/owner/members')
+    response = self.doGet('/players/1/permission_groups/1/members')
     self.assertGoodJSONResponse(response)
     retreived_members = json.loads(response.content)
-    actual_group = PlayerPermissionGroup.objects.get(player__id=1, name='owner')
+    actual_group = PlayerPermissionGroup.objects.get(player__id=1, id=1)
     self.assertEqual(len(actual_group.Members),
                      len(retreived_members))
     for user in retreived_members:
       mathing_user = actual_group.Members.get(pk=user['id'])
 
   def testGetBadPermissionGroupMembers(self):
-    response = self.doGet('/players/1/permission_groups/dontexist/members')
+    response = self.doGet('/players/1/permission_groups/999999999/members')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission-group', response[MISSING_RESOURCE_HEADER])
 
   def testAddUserToPermissionGroup(self):
-    response = self.doPut('/players/1/permission_groups/owner/members/3')
+    response = self.doPut('/players/1/permission_groups/1/members/3')
     self.assertEqual(201, response.status_code)
-    new_group_member = PlayerPermissionGroupMember.objects.get(permission_group__name="owner",
+    new_group_member = PlayerPermissionGroupMember.objects.get(permission_group__id=1,
                                                                permission_group__player__id=1,
                                                                user__id=3)
 
   def testAddBadUserToPermissionGroup(self):
-    response = self.doPut('/players/1/permission_groups/owner/members/3333333333')
+    response = self.doPut('/players/1/permission_groups/1/members/3333333333')
     self.assertEqual(404, response.status_code)
     self.assertEqual('user', response[MISSING_RESOURCE_HEADER])
 
   def testAddUserToBadPermissionGroup(self):
-    response = self.doPut('/players/1/permission_groups/doesntexist/members/3')
+    response = self.doPut('/players/1/permission_groups/9999999999/members/3')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission-group', response[MISSING_RESOURCE_HEADER])
 
   def testRemoveUserFromPermissionGroup(self):
-    response = self.doDelete('/players/1/permission_groups/owner/members/2')
+    response = self.doDelete('/players/1/permission_groups/1/members/2')
     self.assertEqual(200, response.status_code)
-    self.assertFalse(PlayerPermissionGroupMember.objects.filter(permission_group__name="owner",
+    self.assertFalse(PlayerPermissionGroupMember.objects.filter(permission_group__id=1,
                                                                 permission_group__player__id=1,
                                                                 user__id=2).exists())
   def testRemoveBadUserFromPermissionGroup(self):
-    response = self.doDelete('/players/1/permission_groups/owner/members/3')
+    response = self.doDelete('/players/1/permission_groups/1/members/3')
     self.assertEqual(404, response.status_code)
     self.assertEqual('user', response[MISSING_RESOURCE_HEADER])
 
   def testRemoveUserFromBadPermissionGroup(self):
-    response = self.doDelete('/players/1/permission_groups/doesntexist/members/3')
+    response = self.doDelete('/players/1/permission_groups/99999999999/members/3')
     self.assertEqual(404, response.status_code)
     self.assertEqual('permission-group', response[MISSING_RESOURCE_HEADER])

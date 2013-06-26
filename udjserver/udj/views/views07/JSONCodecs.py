@@ -92,6 +92,7 @@ class UDJEncoder(json.JSONEncoder):
       }
     elif isinstance(obj, PlayerPermissionGroup):
       return {
+        'id' : str(obj.id),
         'name' : obj.name,
         'users' : obj.Members
       }

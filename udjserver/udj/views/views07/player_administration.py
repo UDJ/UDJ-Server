@@ -271,9 +271,9 @@ def getPlayerPermissions(request, player_id, player):
     permissions[perm[1]] = perm_groups
   return HttpJSONResponse(json.dumps(permissions, cls=UDJEncoder))
 
-def addPermissions(player, perm_code, group_name):
+def addPermissions(player, perm_code, group_id):
   try:
-    actual_group = PlayerPermissionGroup.objects.get(player=player, name=group_name)
+    actual_group = PlayerPermissionGroup.objects.get(player=player, id=group_id)
     PlayerPermission.objects.get_or_create(player=player,
                                            permission=perm_code,
                                            group=actual_group)
@@ -283,11 +283,11 @@ def addPermissions(player, perm_code, group_name):
   return HttpResponse()
 
 
-def removePermissions(player, perm_code, group_name):
+def removePermissions(player, perm_code, group_id):
   try:
     PlayerPermission.objects.get(player=player,
                                  permission=perm_code,
-                                 group__name=group_name).delete()
+                                 group__id=group_id).delete()
   except ObjectDoesNotExist:
     transaction.rollback()
     return HttpResponseMissingResource('permission-group')
@@ -299,36 +299,40 @@ def removePermissions(player, perm_code, group_name):
 @AcceptsMethods(['PUT', 'DELETE'])
 @PlayerExists
 @HasPlayerPermissions(['MPE'])
-def modPlayerPermissions(request, player_id, permission_name, group_name, player):
+def modPlayerPermissions(request, player_id, permission_name, group_id, player):
   try:
     perm_code = PlayerPermission.PERMISSION_NAME_MAP[permission_name]
   except KeyError:
     return HttpResponseMissingResource('permission')
 
   if request.method == 'PUT':
-    return addPermissions(player, perm_code, group_name)
+    return addPermissions(player, perm_code, group_id)
   else:
-    return removePermissions(player, perm_code, group_name)
+    return removePermissions(player, perm_code, group_id)
 
 
 @NeedsAuth
-@AcceptsMethods(['GET'])
+@AcceptsMethods(['GET', 'PUT'])
 @PlayerExists
-def getPermissionGroups(request, player_id, player):
-  return HttpJSONResponse(json.dumps(player.PermissionGroups, cls=UDJEncoder))
+def getOrAddPermissionGroups(request, player_id, player):
+  if request.method == 'GET':
+    return HttpJSONResponse(json.dumps(player.PermissionGroups, cls=UDJEncoder))
+  else:
+    return addPlayerPermissionGroup(request, player)
 
 
-
-def addPlayerPermissionGroup(player, group_name):
+@NeedsJSON
+@HasNZJSONParams(['name'])
+def addPlayerPermissionGroup(request, player, json_params):
   try:
-    PlayerPermissionGroup(player=player, name=group_name).save()
+    PlayerPermissionGroup(player=player, name=json_params['name']).save()
     return HttpResponse(status=201)
   except IntegrityError:
     return HttpResponse(status=409)
 
-def removePlayerPermissionGroup(player, group_name):
+def removePlayerPermissionGroup(player, group_id):
   try:
-    PlayerPermissionGroup.objects.get(player=player, name=group_name).delete()
+    PlayerPermissionGroup.objects.get(player=player, id=group_id).delete()
     return HttpResponse(status=200)
   except ObjectDoesNotExist:
     return HttpResponseMissingResource('permission-group')
@@ -338,19 +342,19 @@ def removePlayerPermissionGroup(player, group_name):
 @AcceptsMethods(['PUT', 'DELETE'])
 @PlayerExists
 @HasPlayerPermissions(['MPE'])
-def modPlayerPermissionGroup(request, player_id, group_name, player):
+def modPlayerPermissionGroup(request, player_id, group_id, player):
   if request.method == 'PUT':
-    return addPlayerPermissionGroup(player, group_name)
+    return addPlayerPermissionGroup(player, group_id)
   else:
-    return removePlayerPermissionGroup(player, group_name)
+    return removePlayerPermissionGroup(player, group_id)
 
 
 @NeedsAuth
 @AcceptsMethods(['GET'])
 @PlayerExists
-def getPermissionGroupMembers(request, player_id, group_name, player):
+def getPermissionGroupMembers(request, player_id, group_id, player):
   try:
-    group = PlayerPermissionGroup.objects.get(player=player, name=group_name)
+    group = PlayerPermissionGroup.objects.get(player=player, id=group_id)
     return HttpJSONResponse(json.dumps(group.Members, cls=UDJEncoder))
   except ObjectDoesNotExist:
     return HttpResponseMissingResource('permission-group')
@@ -358,14 +362,14 @@ def getPermissionGroupMembers(request, player_id, group_name, player):
 @NeedsAuth
 @AcceptsMethods(['PUT', 'DELETE'])
 @PlayerExists
-def modPermissionGroupMembers(request, player_id, group_name, user_id, player):
+def modPermissionGroupMembers(request, player_id, group_id, user_id, player):
   try:
     user = User.objects.get(pk=user_id)
   except ObjectDoesNotExist:
     return HttpResponseMissingResource('user')
 
   try:
-    group = PlayerPermissionGroup.objects.get(player=player, name=group_name)
+    group = PlayerPermissionGroup.objects.get(player=player, id=group_id)
   except ObjectDoesNotExist:
     return HttpResponseMissingResource('permission-group')
 
