@@ -6,18 +6,20 @@ try:
     XS_SHARING_ALLOWED_METHODS = settings.XS_SHARING_ALLOWED_METHODS
     XS_SHARING_ALLOWED_HEADERS = settings.XS_SHARING_ALLOWED_HEADERS
     XS_SHARING_ALLOWED_CREDENTIALS = settings.XS_SHARING_ALLOWED_CREDENTIALS
+    XS_SHARING_EXPOSED_HEADERS = setting.XS_SHARING_EXPOSED_HEADERS
 except AttributeError:
     from udj.headers import TICKET_HEADER
     XS_SHARING_ALLOWED_ORIGINS = '*'
     XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
     XS_SHARING_ALLOWED_HEADERS = ['Content-Type', TICKET_HEADER, '*']
     XS_SHARING_ALLOWED_CREDENTIALS = 'true'
+    XS_SHARING_EXPOSED_HEADERS = []
 
 
 class XsSharing(object):
     """
     This middleware allows cross-domain XHR using the html5 postMessage API.
-     
+
     Access-Control-Allow-Origin: http://foo.example
     Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE
 
@@ -26,10 +28,11 @@ class XsSharing(object):
     def process_request(self, request):
         if 'HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META:
             response = http.HttpResponse()
-            response['Access-Control-Allow-Origin']  = XS_SHARING_ALLOWED_ORIGINS 
-            response['Access-Control-Allow-Methods'] = ",".join( XS_SHARING_ALLOWED_METHODS ) 
+            response['Access-Control-Allow-Origin']  = XS_SHARING_ALLOWED_ORIGINS
+            response['Access-Control-Allow-Methods'] = ",".join( XS_SHARING_ALLOWED_METHODS )
             response['Access-Control-Allow-Headers'] = ",".join( XS_SHARING_ALLOWED_HEADERS )
             response['Access-Control-Allow-Credentials'] = XS_SHARING_ALLOWED_CREDENTIALS
+            response['Access-Control-Expose-Headers'] = ",".join( XS_SHARING_EXPOSED_HEADERS )
             return response
 
         return None
@@ -39,5 +42,6 @@ class XsSharing(object):
         response['Access-Control-Allow-Methods'] = ",".join( XS_SHARING_ALLOWED_METHODS )
         response['Access-Control-Allow-Headers'] = ",".join( XS_SHARING_ALLOWED_HEADERS )
         response['Access-Control-Allow-Credentials'] = XS_SHARING_ALLOWED_CREDENTIALS
+        response['Access-Control-Expose-Headers'] = ",".join( XS_SHARING_EXPOSED_HEADERS )
 
         return response
