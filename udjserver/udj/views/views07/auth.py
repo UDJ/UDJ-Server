@@ -68,12 +68,15 @@ def authenticate(request, json_params):
 @HasNZJSONParams(['user_id', 'access_token'])
 def fb_authenticate(request, json_params):
   import requests
+  from urllib import quote
   params = {
       "fields" : "last_name,first_name,email,username",
       "access_token" : json_params['access_token']
   }
 
-  url = "https://graph.facebook.com/{0}".format(json_params['user_id'])
+  quoted_user_id = quote(json_params['user_id'], '')
+
+  url = "https://graph.facebook.com/{0}".format(quoted_user_id)
   user_request = requests.get(url, params=params)
   user_data = json.loads(user_request.text)
 
