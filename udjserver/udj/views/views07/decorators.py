@@ -6,10 +6,7 @@ from udj.models import Player
 from udj.models import Library
 from udj.models import Participant
 from udj.views.views07.responses import HttpResponseMissingResource
-"""
-from udj.models import Participant
 from django.http import HttpResponse
-"""
 
 from django.http import HttpResponseNotAllowed
 from django.http import HttpResponseBadRequest
