@@ -59,15 +59,19 @@ def getUniqueRandHash():
 
 
 def obtainTicketForUser(userRequestingTicket):
-  ticket , created = Ticket.objects.get_or_create(
-    user=userRequestingTicket,
-    defaults={'ticket_hash' : getUniqueRandHash()})
+  current_tickets = Ticket.objects.filter(user=userRequestingTicket)
+  if current_tickets.exists():
+    ticket = current_tickets[0]
+    if (datetime.now() - ticket.time_issued).days >= 1:
+      ticket.ticket_hash=getUniqueRandHash()
+      ticket.time_issued=datetime.now()
+      ticket.save()
+    return ticket
+  else:
+    newTicket = Ticket(user=userRequestingTicket, ticket_hash = getUniqueRandHash())
+    newTicket.save()
+    return newTicket
 
-  if not created and (datetime.now() - ticket.time_issued).days >= 1:
-    ticket.ticket_hash=getUniqueRandHash()
-    ticket.time_issued=datetime.now()
-    ticket.save()
-  return ticket
 
 
 @csrf_exempt
