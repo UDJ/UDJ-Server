@@ -3,7 +3,7 @@ from udj.headers import DJANGO_TICKET_HEADER
 from udj.headers import TICKET_HEADER
 from udj.views.views07.responses import HttpResponseForbiddenWithReason, HttpResponseUnauthorized
 
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponseBadRequest
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 

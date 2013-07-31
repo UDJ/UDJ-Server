@@ -64,6 +64,11 @@ class BeginParticipateTests(ZachTestCase):
     zach = Participant.objects.get(player__id=6, user__id=8)
     self.assertEqual(zach.kick_flag, False)
 
+class BadParticipateTests(KurtisTestCase):
+  def testOwnerLogin(self):
+    response = self.doPut('/players/2/users/user')
+    self.assertEqual(response.status_code, 400)
+
 class LoginAfterLogout(LeeTestCase):
   def testLogin(self):
     response = self.doPut('/players/1/users/user')
