@@ -9,7 +9,7 @@ from udj.models import Ticket, FbUser
 from udj.headers import DJANGO_TICKET_HEADER
 from udj.testhelpers.tests07.testclasses import BasicUDJTestCase
 
-from settings import TICKET_VALIDITY_LENGTH, FB_TEST_ACCESS_TOKEN, FB_TEST_USER_ID
+from settings import TICKET_VALIDITY_LENGTH, FB_TEST_ACCESS_TOKEN, FB_TEST_USER_ID, FB_TEST_USER_USERNAME
 
 
 class AuthTests(BasicUDJTestCase):
@@ -88,7 +88,7 @@ class AuthTests(BasicUDJTestCase):
 
 class FbAuthTests(BasicUDJTestCase):
 
-  def testFbAuth(self):
+  def doFbAuth(self):
     import requests
 
     params = {
@@ -108,6 +108,11 @@ class FbAuthTests(BasicUDJTestCase):
     url = "https://graph.facebook.com/{0}".format(FB_TEST_USER_ID)
     user_request = requests.get(url, params=params)
     user_data = json.loads(user_request.text)
+    return actual_user, user_data
+
+  def testFbAuth(self):
+    actual_user, user_data = self.doFbAuth()
+
     self.assertEqual(user_data['email'], actual_user.email)
     self.assertEqual(user_data['first_name'], actual_user.first_name)
     self.assertEqual(user_data['last_name'], actual_user.last_name)
@@ -131,3 +136,17 @@ class FbAuthTests(BasicUDJTestCase):
 
     self.assertEqual(401, response.status_code)
     self.assertEqual('password', response['WWW-Authenticate'])
+
+  def testConflictingUsername(self):
+    purposeful_conflict = User(username=FB_TEST_USER_USERNAME,
+                               first_name="blah",
+                               last_name="blah",
+                               email="blah@blah.com")
+    purposeful_conflict.save()
+
+    actual_user, user_data = self.doFbAuth()
+
+    self.assertEqual(user_data['email'], actual_user.email)
+    self.assertEqual(user_data['first_name'], actual_user.first_name)
+    self.assertEqual(user_data['last_name'], actual_user.last_name)
+    self.assertEqual(user_data['username'] + "1", actual_user.username)

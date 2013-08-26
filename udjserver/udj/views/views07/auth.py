@@ -61,6 +61,22 @@ def authenticate(request, json_params):
 
   return HttpResponseUnauthorized('password')
 
+def find_useable_username_from_fb_username(desired_username):
+  """
+  I'm not proud of this function. But it should work until we have a more
+  robust solution
+  """
+  if(not User.objects.filter(username=desired_username).exists()):
+    return desired_username
+
+  current_check_counter = 1
+  current_composite_check = "{0}{1}".format(desired_username, str(current_check_counter))
+  while(User.objects.filter(username=current_composite_check).exists()):
+    current_check_counter += 1
+    current_composite_check = "{0}{1}".format(desired_username, str(current_check_counter))
+
+  return current_composite_check
+
 
 @csrf_exempt
 @AcceptsMethods(['POST'])
@@ -90,7 +106,8 @@ def fb_authenticate(request, json_params):
   try:
     user_to_auth = FbUser.objects.get(fb_user_id=json_params['user_id']).user
   except ObjectDoesNotExist:
-    user_to_auth = User(username=user_data['username'],
+    usable_username = find_useable_username_from_fb_username(user_data['username'])
+    user_to_auth = User(username=usable_username,
                 first_name=user_data['first_name'],
                 last_name=user_data['last_name'],
                 email=user_data['email'])

@@ -164,7 +164,8 @@ RDIO_CONSUMER_SECRET = ""
 
 #These are only needed for testing purposes
 FB_TEST_USER_ID = ""
-FB_APP_ACCESS_TOKEN = ""
+FB_TEST_ACCESS_TOKEN = ""
+FB_TEST_USER_USERNAME = ""
 
 try:
   from settings_local import *
